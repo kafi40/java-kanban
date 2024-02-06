@@ -34,9 +34,29 @@ public class Task {
         return taskStatus;
     }
 
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public void setTaskDescription(String taskDescription) {
+        this.taskDescription = taskDescription;
+    }
+
+    public void setTaskStatus(TaskStatus taskStatus) {
+        this.taskStatus = taskStatus;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+        Task otherTask = (Task) obj;
+        return  Objects.equals(taskName, otherTask.taskName) &&
+                Objects.equals(taskDescription, otherTask.taskDescription);
     }
 
     @Override
