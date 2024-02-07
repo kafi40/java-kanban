@@ -14,6 +14,9 @@ public class Main {
         int taskId;
 
         OUTER: while (true) {
+
+            TaskManager.setEpicTaskStatus();
+
             UserInterface.mainMenuPrint();
             int command = Utils.checkCommand(Parameters.MAIN_MENU_COMMAND_COUNT);
             switch (command) {

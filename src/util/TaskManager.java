@@ -28,11 +28,38 @@ public class TaskManager {
         };
     }
 
-    public static void setEpicTaskStatus(EpicTask epicTask) {
-        boolean isNewTaskFlag = true;
+    public static void setEpicTaskStatus() {
+        boolean isNewTaskFlag = false;
+        boolean isDoneTaskFlag = false;
 
-        for (SubTask st : epicTask.getSubTasks()) {
-            if (st.getTaskStatus() == TaskStatus.DONE || )
+        for(EpicTask et : epicTasks.values()) {
+            if(et.getSubTasks().isEmpty()) {
+                et.setTaskStatus(TaskStatus.NEW);
+                continue;
+            }
+            for (SubTask st : et.getSubTasks()) {
+                if (st.getTaskStatus().equals(TaskStatus.NEW)) {
+                    isNewTaskFlag = true;
+                } else {
+                    isNewTaskFlag = false;
+                    break;
+                }
+            }
+            for (SubTask st : et.getSubTasks()) {
+                if (st.getTaskStatus().equals(TaskStatus.DONE)) {
+                    isDoneTaskFlag = true;
+                } else {
+                    isDoneTaskFlag = false;
+                    break;
+                }
+            }
+            if(isNewTaskFlag) {
+                et.setTaskStatus(TaskStatus.NEW);
+            } else if (isDoneTaskFlag) {
+                et.setTaskStatus(TaskStatus.DONE);
+            } else {
+                et.setTaskStatus(TaskStatus.IN_PROGRESS);
+            }
         }
     }
 
@@ -108,6 +135,7 @@ public class TaskManager {
                 int mainEpicTaskId = epicTasksIdList.get(command - 1);
                 SubTask subTask = new SubTask(taskName, taskDescription, taskStatus, epicTasks.get(mainEpicTaskId));
                 subTasks.put(subTask.getTaskId(), subTask);
+                epicTasks.get(mainEpicTaskId).addSubTask(subTask);
                 allTypeTasks.put(subTask.getTaskId(), subTask);
         }
         System.out.println("Задача добавлена!");
@@ -192,7 +220,7 @@ public class TaskManager {
                 }
                 for (EpicTask et : epicTasks.values()) {
                     TaskManager.showTask(et);
-                    for (SubTask st : subTasks.values()) {
+                    for (SubTask st : et.getSubTasks()) {
                         TaskManager.showTask(st);
                     }
                 }
