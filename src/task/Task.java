@@ -55,8 +55,7 @@ public class Task {
             return false;
         }
         Task otherTask = (Task) obj;
-        return  Objects.equals(taskName, otherTask.taskName) &&
-                Objects.equals(taskDescription, otherTask.taskDescription);
+        return  Objects.equals(taskId, otherTask.taskId) ;
     }
 
     @Override

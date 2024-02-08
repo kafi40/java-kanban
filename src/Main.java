@@ -1,22 +1,14 @@
-import task.*;
 import util.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
-
         System.out.println("Задачник - \"Всё успею!\"");
 
         int taskId;
 
         OUTER: while (true) {
-
             TaskManager.setEpicTaskStatus();
-
             UserInterface.mainMenuPrint();
             int command = Utils.checkCommand(Parameters.MAIN_MENU_COMMAND_COUNT);
             switch (command) {
@@ -89,7 +81,7 @@ public class Main {
                     taskId = Utils.checkId(TaskManager.taskIdCounter);
                     if (taskId == 0)
                         continue;
-                    TaskManager.deleteTaskById();
+                    TaskManager.deleteTaskById(taskId);
                     break;
 
                 case 0:

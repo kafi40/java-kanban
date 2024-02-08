@@ -21,7 +21,6 @@ public class TaskManager {
 
     public static TaskStatus setTaskStatus(int command) {
         return switch (command) {
-            case 1 -> TaskStatus.NEW;
             case 2 -> TaskStatus.IN_PROGRESS;
             case 3 -> TaskStatus.DONE;
             default -> TaskStatus.NEW;
@@ -190,9 +189,7 @@ public class TaskManager {
         scanner.nextLine();
     }
 
-    public static void deleteTaskById() {
-        System.out.print("Введите ID: ");
-        int taskId = Utils.checkId(taskIdCounter);
+    public static void deleteTaskById(int taskId ) {
         allTypeTasks.remove(taskId);
         if(tasks.get(taskId) != null) {
             tasks.remove(taskId);

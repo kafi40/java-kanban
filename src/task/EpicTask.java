@@ -1,7 +1,6 @@
 package task;
 
 import util.TaskStatus;
-
 import java.util.ArrayList;
 
 public class EpicTask extends Task {
@@ -15,10 +14,6 @@ public class EpicTask extends Task {
 
     public ArrayList<SubTask> getSubTasks() {
         return subTasks;
-    }
-
-    public void setSubTasks(ArrayList<SubTask> subTasks) {
-        this.subTasks = subTasks;
     }
 
     public void addSubTask(SubTask subTask) {
