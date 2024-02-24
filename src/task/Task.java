@@ -1,13 +1,12 @@
 package task;
 
-import util.TaskManager;
+import memory.InMemoryTaskManager;
 import util.TaskStatus;
-
 import java.util.Objects;
 
 public class Task {
 
-    private final int taskId = TaskManager.taskIdGenerator();
+    private final int taskId = InMemoryTaskManager.taskIdGenerator();
     private String taskName;
     private String taskDescription;
     private TaskStatus taskStatus;

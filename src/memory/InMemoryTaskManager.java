@@ -1,25 +1,33 @@
-package util;
+package memory;
 
+import interfaces.TaskHistory;
+import interfaces.TaskManager;
 import task.*;
-
+import util.Parameters;
+import util.TaskStatus;
+import util.UserInterface;
+import util.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class TaskManager {
+public class InMemoryTaskManager implements TaskManager {
 
-    public static HashMap<Integer, Object> allTypeTasks = new HashMap<>();
-    public static HashMap<Integer, Task> tasks = new HashMap<>();
-    public static HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
-    public static HashMap<Integer, SubTask> subTasks = new HashMap<>();
+    private final HashMap<Integer, Task> allTypeTasks = new HashMap<>();
+    private final HashMap<Integer, Task> tasks = new HashMap<>();
+    private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
+    private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
     public static int taskIdCounter = 0;
+
+    TaskHistory taskHistory = new InMemoryTaskHistory();
 
     public static int taskIdGenerator() {
        taskIdCounter = taskIdCounter + 1;
        return taskIdCounter;
     }
 
-    public static TaskStatus setTaskStatus(int command) {
+    @Override
+    public TaskStatus setTaskStatus(int command) {
         return switch (command) {
             case 2 -> TaskStatus.IN_PROGRESS;
             case 3 -> TaskStatus.DONE;
@@ -27,7 +35,8 @@ public class TaskManager {
         };
     }
 
-    public static void setEpicTaskStatus() {
+    @Override
+    public void setEpicTaskStatus() {
         boolean isNewTaskFlag = false;
         boolean isDoneTaskFlag = false;
 
@@ -62,7 +71,8 @@ public class TaskManager {
         }
     }
 
-    public static void showTask(Task task) {
+    @Override
+    public void showTask(Task task) {
         String taskStatus;
         String epicTask;
 
@@ -83,7 +93,8 @@ public class TaskManager {
         System.out.println(Utils.tableFormatter(epicTask));
     }
 
-    public static void addTask(int command) {
+    @Override
+    public void addTask(int command) {
 
         Scanner scanner = new Scanner(System.in);
         String taskName;
@@ -103,7 +114,7 @@ public class TaskManager {
                 System.out.print("Выберите статус задачи: ");
                 command = Utils.checkCommand(Parameters.TASK_STATUS_COMMAND_COUNT);
                 if (command == 0) return;
-                taskStatus = TaskManager.setTaskStatus(command);
+                taskStatus = setTaskStatus(command);
                 Task task = new Task(taskName, taskDescription, taskStatus);
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
@@ -120,7 +131,7 @@ public class TaskManager {
                 System.out.print("Выберите статус задачи: ");
                 command = Utils.checkCommand(Parameters.TASK_STATUS_COMMAND_COUNT);
                 if (command == 0) return;
-                taskStatus = TaskManager.setTaskStatus(command);
+                taskStatus = setTaskStatus(command);
                 int i = 0;
                 ArrayList<Integer> epicTasksIdList = new ArrayList<>();
                 for (Task t: epicTasks.values()) {
@@ -140,7 +151,8 @@ public class TaskManager {
         System.out.println("Задача добавлена!");
     }
 
-    public static void clearTasks(int command) {
+    @Override
+    public void clearTasks(int command) {
         switch (command) {
             case 1:
                 tasks.clear();
@@ -167,7 +179,8 @@ public class TaskManager {
         }
     }
 
-    public static void findTaskById(int taskId) {
+    @Override
+    public void findTaskById(int taskId) {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -184,12 +197,17 @@ public class TaskManager {
             return;
         }
         UserInterface.tasksHeaderPrint();
-        TaskManager.showTask(task);
+        showTask(task);
+        taskHistory.addTaskInHistory(task);
+        if (taskHistory.getHistory().size() > 10){
+            taskHistory.getHistory().remove(0);
+        }
         System.out.print("Нажмите Enter чтобы продолжить...");
         scanner.nextLine();
     }
 
-    public static void deleteTaskById(int taskId ) {
+    @Override
+    public void deleteTaskById(int taskId ) {
         allTypeTasks.remove(taskId);
         if(tasks.get(taskId) != null) {
             tasks.remove(taskId);
@@ -205,7 +223,8 @@ public class TaskManager {
         System.out.println("Задача удалена!");
     }
 
-    public static void showTasks(int command) {
+    @Override
+    public void showTasks(int command) {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -213,12 +232,12 @@ public class TaskManager {
             case 1:
                 UserInterface.tasksHeaderPrint();
                 for (Task t : tasks.values()) {
-                    TaskManager.showTask(t);
+                    showTask(t);
                 }
                 for (EpicTask et : epicTasks.values()) {
-                    TaskManager.showTask(et);
+                    showTask(et);
                     for (SubTask st : et.getSubTasks()) {
-                        TaskManager.showTask(st);
+                        showTask(st);
                     }
                 }
                 break;
@@ -226,21 +245,21 @@ public class TaskManager {
             case 2:
                 UserInterface.tasksHeaderPrint();
                 for (Task t : tasks.values()) {
-                    TaskManager.showTask(t);
+                    showTask(t);
                 }
                 break;
 
             case 3:
                 UserInterface.tasksHeaderPrint();
                 for (EpicTask et : epicTasks.values()) {
-                    TaskManager.showTask(et);
+                    showTask(et);
                 }
                 break;
 
             case 4:
                 UserInterface.tasksHeaderPrint();
                 for (SubTask st : subTasks.values()) {
-                    TaskManager.showTask(st);
+                    showTask(st);
                 }
                 break;
 
@@ -251,7 +270,8 @@ public class TaskManager {
         scanner.nextLine();
     }
 
-    public static void editTaskById(int taskId) {
+    @Override
+    public void editTaskById(int taskId) {
 
         Scanner scanner = new Scanner(System.in);
         String taskName;
@@ -293,5 +313,33 @@ public class TaskManager {
         task.setTaskName(taskName);
         task.setTaskDescription(taskDescription);
         System.out.println("Задача отредактирована");
+    }
+
+    @Override
+    public void getHistory() {
+
+        Scanner scanner = new Scanner(System.in);
+
+        for (Task t : taskHistory.getHistory()) {
+            showTask(t);
+        }
+        System.out.print("Нажмите Enter чтобы продолжить...");
+        scanner.nextLine();
+    }
+
+    public HashMap<Integer, Task> getAllTypeTasks() {
+        return allTypeTasks;
+    }
+
+    public HashMap<Integer, Task> getTasks() {
+        return tasks;
+    }
+
+    public HashMap<Integer, EpicTask> getEpicTasks() {
+        return epicTasks;
+    }
+
+    public HashMap<Integer, SubTask> getSubTasks() {
+        return subTasks;
     }
 }
