@@ -199,9 +199,6 @@ public class InMemoryTaskManager implements TaskManager {
         UserInterface.tasksHeaderPrint();
         showTask(task);
         taskHistory.addTaskInHistory(task);
-        if (taskHistory.getHistory().size() > 10){
-            taskHistory.getHistory().remove(0);
-        }
         System.out.print("Нажмите Enter чтобы продолжить...");
         scanner.nextLine();
     }
