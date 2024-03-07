@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class Task {
 
-    private final int taskId = InMemoryTaskManager.taskIdGenerator();
+    private final Integer taskId = InMemoryTaskManager.taskIdGenerator();
     private String taskName;
     private String taskDescription;
     private TaskStatus taskStatus;
@@ -59,7 +59,17 @@ public class Task {
 
     @Override
     public int hashCode() {
-        return Objects.hash(taskId, taskName, taskDescription, taskStatus);
+        int hash = 17;
+
+        hash += taskId.hashCode();
+        if (taskName != null) {
+            hash += taskName.hashCode();
+        }
+        hash *= 31;
+        if(taskDescription != null) {
+            hash += taskDescription.hashCode();
+        }
+        return hash;
     }
 
     @Override

@@ -2,23 +2,47 @@ package memory;
 
 import interfaces.TaskHistory;
 import task.Task;
+import util.Node;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class InMemoryTaskHistory implements TaskHistory {
 
-    private final ArrayList<Task> tasksHistory = new ArrayList<>(10);
+    private Node<Task> head;
+    private Node<Task> tail;
+    private int size = 0;
+    private final HashMap<Integer, Node<Task>> tasksHistory = new HashMap<>();
 
     @Override
     public void addTaskInHistory(Task task) {
-        if (tasksHistory.size() > 10) {
-            tasksHistory.removeFirst();
+        if (tasksHistory.contains(task)) {
+            tasksHistory.remove(task);
         }
-        tasksHistory.add(task);
+        tasksHistory.addFirst(task);
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public Set<Task> getHistory() {
         return tasksHistory;
+    }
+
+    @Override
+    public void removeTaskFromHistory(int id) {
+        tasksHistory.remove(id);
+    }
+
+    public void linkLast(Task task) {
+        final Node<Task> oldTail = tail;
+        final Node<Task> newNode = new Node<>(oldTail, task, null);
+
+        tail = newNode;
+        if (oldTail == null) {
+            head = newNode;
+        } else {
+            oldTail.next = newNode;
+        }
+        size++;
     }
 }

@@ -1,13 +1,14 @@
 package interfaces;
 
 import task.Task;
-
-import java.util.ArrayList;
+import java.util.Set;
 
 public interface TaskHistory {
 
     void addTaskInHistory(Task task);
 
-    ArrayList<Task> getHistory();
+    Set<Task> getHistory();
+
+    void removeTaskFromHistory(int id);
 
 }
