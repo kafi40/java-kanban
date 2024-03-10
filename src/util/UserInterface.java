@@ -11,6 +11,7 @@ public class UserInterface {
         System.out.println("5 - Изменить задачу по ID");
         System.out.println("6 - Удалить задачу по ID");
         System.out.println("7 - История просмотра");
+        System.out.println("8 - Сценарий задач");
         System.out.println("0 - Выйти");
     }
 

@@ -54,7 +54,7 @@ public class Task {
             return false;
         }
         Task otherTask = (Task) obj;
-        return  Objects.equals(taskId, otherTask.taskId) ;
+        return  Objects.equals(taskId, otherTask.taskId);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class Task {
             hash += taskName.hashCode();
         }
         hash *= 31;
-        if(taskDescription != null) {
+        if (taskDescription != null) {
             hash += taskDescription.hashCode();
         }
         return hash;

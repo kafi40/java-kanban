@@ -8,7 +8,7 @@ public class Utils {
         while (true) {
             Scanner scanner = new Scanner(System.in);
             int command;
-            if(!scanner.hasNextInt()) {
+            if (!scanner.hasNextInt()) {
                 System.out.print("Такой команды нет! Попробуйте снова: ");
             } else {
                 command = scanner.nextInt();
@@ -25,7 +25,7 @@ public class Utils {
         while (true) {
             Scanner scanner = new Scanner(System.in);
             int inputId;
-            if(!scanner.hasNextInt()) {
+            if (!scanner.hasNextInt()) {
                 System.out.print("Такого ID нет! Попробуйте снова: ");
             } else {
                 inputId = scanner.nextInt();

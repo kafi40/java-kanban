@@ -1,13 +1,13 @@
 package interfaces;
 
 import task.Task;
-import java.util.Set;
+import java.util.List;
 
-public interface TaskHistory {
+public interface TaskHistory<T extends Task> {
 
-    void addTaskInHistory(Task task);
+    void addTaskInHistory(T element);
 
-    Set<Task> getHistory();
+    List<Task> getHistory();
 
     void removeTaskFromHistory(int id);
 
