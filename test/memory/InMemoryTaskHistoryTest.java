@@ -8,9 +8,7 @@ import task.SubTask;
 import task.Task;
 import util.Managers;
 import util.TaskStatus;
-
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskHistoryTest {
@@ -20,11 +18,10 @@ class InMemoryTaskHistoryTest {
     static public Task task;
     static public EpicTask epicTask;
     static public SubTask subTask;
-
     public List tasksList;
 
     @BeforeAll
-    public static void BeforeAll() {
+    public static void beforeAll() {
         taskManager = (InMemoryTaskManager) Managers.getDefault();
         taskHistory = new InMemoryTaskHistory();
         task = new Task("Name", "Description", TaskStatus.NEW);
@@ -51,7 +48,6 @@ class InMemoryTaskHistoryTest {
         EpicTask epicTask1 = epicTask;
         SubTask subTask1 = subTask;
 
-
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
         taskHistory.addTaskInHistory(task1);
         taskHistory.addTaskInHistory(epicTask1);
@@ -60,6 +56,4 @@ class InMemoryTaskHistoryTest {
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
 
     }
-
-
 }

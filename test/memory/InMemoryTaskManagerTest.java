@@ -16,7 +16,7 @@ public class InMemoryTaskManagerTest {
     static public SubTask subTask;
 
     @BeforeAll
-    public static void BeforeAll() {
+    public static void beforeAll() {
         taskManager = (InMemoryTaskManager) Managers.getDefault();
         task = new Task("Name", "Description", TaskStatus.NEW);
         epicTask = new EpicTask("Name", "Description");
@@ -47,7 +47,5 @@ public class InMemoryTaskManagerTest {
         assertNotNull(taskManager.getTasks().get(taskId), "Обычная задача не добавилась список обычных задач");
         assertNotNull(taskManager.getEpicTasks().get(epicTaskId), "Эпик задача не добавилась список эпик задач");
         assertNotNull(taskManager.getSubTasks().get(subTaskId), "Подзадача не добавилась список подзадач");
-
-
     }
 }
