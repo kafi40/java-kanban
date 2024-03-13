@@ -7,9 +7,8 @@ import util.Parameters;
 import util.TaskStatus;
 import util.UserInterface;
 import util.Utils;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -18,8 +17,23 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
     private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
     public static int taskIdCounter = 0;
-
     TaskHistory taskHistory = new InMemoryTaskHistory();
+
+    public HashMap<Integer, Task> getAllTypeTasks() {
+        return allTypeTasks;
+    }
+
+    public HashMap<Integer, Task> getTasks() {
+        return tasks;
+    }
+
+    public HashMap<Integer, EpicTask> getEpicTasks() {
+        return epicTasks;
+    }
+
+    public HashMap<Integer, SubTask> getSubTasks() {
+        return subTasks;
+    }
 
     public static int taskIdGenerator() {
        taskIdCounter = taskIdCounter + 1;
@@ -40,8 +54,8 @@ public class InMemoryTaskManager implements TaskManager {
         boolean isNewTaskFlag = false;
         boolean isDoneTaskFlag = false;
 
-        for(EpicTask et : epicTasks.values()) {
-            if(et.getSubTasks().isEmpty()) {
+        for (EpicTask et : epicTasks.values()) {
+            if (et.getSubTasks().isEmpty()) {
                 et.setTaskStatus(TaskStatus.NEW);
                 continue;
             }
@@ -61,7 +75,7 @@ public class InMemoryTaskManager implements TaskManager {
                     break;
                 }
             }
-            if(isNewTaskFlag) {
+            if (isNewTaskFlag) {
                 et.setTaskStatus(TaskStatus.NEW);
             } else if (isDoneTaskFlag) {
                 et.setTaskStatus(TaskStatus.DONE);
@@ -72,7 +86,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void showTask(Task task) {
+    public  void showTask(Task task) {
         String taskStatus;
         String epicTask;
 
@@ -186,7 +200,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         if (taskId == 0) return;
         Task task;
-        if(tasks.get(taskId) != null) {
+        if (tasks.get(taskId) != null) {
             task = tasks.get(taskId);
         } else if (epicTasks.get(taskId) != null) {
             task = epicTasks.get(taskId);
@@ -204,9 +218,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteTaskById(int taskId ) {
+    public void deleteTaskById(int taskId) {
         allTypeTasks.remove(taskId);
-        if(tasks.get(taskId) != null) {
+        if (tasks.get(taskId) != null) {
             tasks.remove(taskId);
         } else if (epicTasks.get(taskId) != null) {
             epicTasks.get(taskId).removeSubTask();
@@ -284,7 +298,7 @@ public class InMemoryTaskManager implements TaskManager {
         taskDescription = scanner.nextLine();
         if (taskDescription.equals("0"))
             return;
-        if(epicTasks.get(taskId) == null) {
+        if (epicTasks.get(taskId) == null) {
             UserInterface.statusMenuPrint();
             System.out.print("Выберите статус задачи: ");
             command = Utils.checkCommand(Parameters.TASK_STATUS_COMMAND_COUNT);
@@ -313,30 +327,43 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void getHistory() {
+    public  void getHistory() {
 
         Scanner scanner = new Scanner(System.in);
+        List<Task> tempList =  taskHistory.getHistory();
 
-        for (Task t : taskHistory.getHistory()) {
+        for (Task t : tempList) {
             showTask(t);
         }
         System.out.print("Нажмите Enter чтобы продолжить...");
         scanner.nextLine();
     }
 
-    public HashMap<Integer, Task> getAllTypeTasks() {
-        return allTypeTasks;
-    }
+    public void createTasksScript() {
+        Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
+        Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
+        EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
+        SubTask subTask = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
+        SubTask subTask2 = new SubTask("Купить украшения", "Шарики, декор", TaskStatus.NEW, epicTask);
+        SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
+        epicTask.addSubTask(subTask);
+        epicTask.addSubTask(subTask2);
+        epicTask.addSubTask(subTask3);
+        EpicTask epicTask2 = new EpicTask("Стать разработчиком", "До конца года");
+        List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask2, subTask3, epicTask2);
 
-    public HashMap<Integer, Task> getTasks() {
-        return tasks;
-    }
-
-    public HashMap<Integer, EpicTask> getEpicTasks() {
-        return epicTasks;
-    }
-
-    public HashMap<Integer, SubTask> getSubTasks() {
-        return subTasks;
+        for (Task t : listScript) {
+            allTypeTasks.put(t.getTaskId(), t);
+            if (t.getClass() == Task.class) {
+                tasks.put(t.getTaskId(), t);
+            }
+            if (t.getClass() == EpicTask.class) {
+                epicTasks.put(t.getTaskId(), (EpicTask) t);
+            }
+            if (t.getClass() == SubTask.class) {
+                subTasks.put(t.getTaskId(), (SubTask) t);
+            }
+        }
+        System.out.println("Задачи созданы");
     }
 }

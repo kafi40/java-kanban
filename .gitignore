@@ -9,6 +9,7 @@
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
+checkstyle.xml
 
 # Package Files #
 *.jar

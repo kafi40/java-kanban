@@ -8,7 +8,6 @@ public class Main {
 
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
         int taskId;
-
         OUTER: while (true) {
             inMemoryTaskManager.setEpicTaskStatus();
             UserInterface.mainMenuPrint();
@@ -37,7 +36,7 @@ public class Main {
                             break;
 
                         case 0:
-                            continue ;
+                            continue;
                     }
                     break;
 
@@ -89,6 +88,9 @@ public class Main {
                 case 7:
                     System.out.println("История просмотра:");
                     inMemoryTaskManager.getHistory();
+                    break;
+                case 8:
+                    inMemoryTaskManager.createTasksScript();
                     break;
                 case 0:
                     break OUTER;

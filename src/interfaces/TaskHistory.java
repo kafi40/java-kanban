@@ -1,13 +1,14 @@
 package interfaces;
 
 import task.Task;
+import java.util.List;
 
-import java.util.ArrayList;
+public interface TaskHistory<T extends Task> {
 
-public interface TaskHistory {
+    void addTaskInHistory(T element);
 
-    void addTaskInHistory(Task task);
+    List<Task> getHistory();
 
-    ArrayList<Task> getHistory();
+    void removeTaskFromHistory(int id);
 
 }
