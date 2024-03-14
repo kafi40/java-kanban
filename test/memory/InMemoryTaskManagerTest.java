@@ -6,7 +6,7 @@ import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
-import util.TaskStatus;
+import enums.TaskStatus;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InMemoryTaskManagerTest {

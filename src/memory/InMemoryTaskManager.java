@@ -4,7 +4,7 @@ import interfaces.TaskHistory;
 import interfaces.TaskManager;
 import task.*;
 import util.Parameters;
-import util.TaskStatus;
+import enums.TaskStatus;
 import util.UserInterface;
 import util.Utils;
 

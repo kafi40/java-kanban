@@ -1,7 +1,7 @@
 package task;
 
 import memory.InMemoryTaskManager;
-import util.TaskStatus;
+import enums.TaskStatus;
 import java.util.Objects;
 
 public class Task {

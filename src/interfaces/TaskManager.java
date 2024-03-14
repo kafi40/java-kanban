@@ -1,7 +1,7 @@
 package interfaces;
 
 import task.Task;
-import util.TaskStatus;
+import enums.TaskStatus;
 
 public interface TaskManager {
 

@@ -1,6 +1,6 @@
 package task;
 
-import util.TaskStatus;
+import enums.TaskStatus;
 import java.util.ArrayList;
 
 public class EpicTask extends Task {
