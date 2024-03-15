@@ -1,13 +1,17 @@
 package memory;
 
+import enums.TaskStatus;
 import interfaces.TaskHistory;
 import interfaces.TaskManager;
-import task.*;
+import io.FileBackedTaskManager;
+import task.EpicTask;
+import task.SubTask;
+import task.Task;
 import util.Parameters;
-import enums.TaskStatus;
 import util.UserInterface;
 import util.Utils;
 
+import java.io.IOException;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
@@ -108,7 +112,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addTask(int command) {
+    public void addTask(int command) throws IOException {
 
         Scanner scanner = new Scanner(System.in);
         String taskName;
@@ -132,12 +136,14 @@ public class InMemoryTaskManager implements TaskManager {
                 Task task = new Task(taskName, taskDescription, taskStatus);
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
+                new FileBackedTaskManager().save(task);
                 break;
 
             case 2:
                 EpicTask epicTask = new EpicTask(taskName, taskDescription);
                 epicTasks.put(epicTask.getTaskId(), epicTask);
                 allTypeTasks.put(epicTask.getTaskId(), epicTask);
+                new FileBackedTaskManager().save(epicTask);
                 break;
 
             case 3:
@@ -161,6 +167,7 @@ public class InMemoryTaskManager implements TaskManager {
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
                 allTypeTasks.put(subTask.getTaskId(), subTask);
+                new FileBackedTaskManager().save(subTask);
         }
         System.out.println("Задача добавлена!");
     }

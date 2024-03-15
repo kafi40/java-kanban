@@ -1,13 +1,36 @@
+import io.FileBackedTaskManager;
 import memory.InMemoryTaskManager;
-import util.*;
+import task.EpicTask;
+import task.SubTask;
+import task.Task;
+import util.Parameters;
+import util.UserInterface;
+import util.Utils;
+
+import java.io.IOException;
+import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
-        System.out.println("Задачник - \"Всё успею!\"");
-
+    public static void main(String[] args) throws IOException {
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         int taskId;
+        List<Task> taskList = fileBackedTaskManager.getData();
+
+        for (Task t : taskList) {
+            inMemoryTaskManager.getAllTypeTasks().put(t.getTaskId(), t);
+            if (t.getClass() == Task.class) {
+                inMemoryTaskManager.getTasks().put(t.getTaskId(), t);
+            }
+            if (t.getClass() == EpicTask.class) {
+                inMemoryTaskManager.getEpicTasks().put(t.getTaskId(), (EpicTask) t);
+            }
+            if (t.getClass() == SubTask.class) {
+                inMemoryTaskManager.getSubTasks().put(t.getTaskId(), (SubTask) t);
+            }
+        }
+
         OUTER: while (true) {
             inMemoryTaskManager.setEpicTaskStatus();
             UserInterface.mainMenuPrint();

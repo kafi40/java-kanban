@@ -3,6 +3,8 @@ package interfaces;
 import task.Task;
 import enums.TaskStatus;
 
+import java.io.IOException;
+
 public interface TaskManager {
 
     TaskStatus setTaskStatus(int command);
@@ -11,7 +13,7 @@ public interface TaskManager {
 
     void showTask(Task task);
 
-    void addTask(int command);
+    void addTask(int command) throws IOException;
 
     void clearTasks(int command);
 
