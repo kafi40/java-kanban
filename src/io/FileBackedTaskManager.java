@@ -15,16 +15,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private static Path path;
     private Task task;
 
-    public void save(Task task) throws IOException {
+    public void save(Task task, boolean isHistory) throws IOException {
         String taskType = "";
-        // Сохраняем в переменную путь к файлу
-        path = Paths.get("src/resource", "backup.txt");
+        // Проверяем куда сохранять задачу в переменную путь к файлу
+        if(isHistory) {
+            path = Paths.get("src/resource", "history.txt");
+        } else {
+            path = Paths.get("src/resource", "backup.txt");
+        }
         // Если файл не существует, создаем его
         if (!Files.exists(path)) {
             Files.createFile(path);
@@ -55,20 +60,25 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         super.addTask(command);
     }
 
-
-    public List<Task> getData() throws IOException {
+    public List<Task> getData(boolean isHistory) throws IOException {
         List<Task> taskList = new ArrayList<>();
-        int id;
-        int epicTaskId;
+        HashMap<Integer, EpicTask> epicTaskHashMap = new HashMap<>();
+        int taskId;
+        int epicTaskId = 0;
         TaskType taskType;
-        String name;
+        String taskName;
         String description;
         TaskStatus taskStatus;
         Task task;
-        EpicTask epicTask = null;
+        EpicTask epicTask;
         SubTask subTask;
 
-        path = Paths.get("src/resource", "backup.txt");
+        // Проверяем куда сохранять задачу в переменную путь к файлу
+        if(isHistory) {
+            path = Paths.get("src/resource", "history.txt");
+        } else {
+            path = Paths.get("src/resource", "backup.txt");
+        }
         // Если файл не существует, создаем его
         if (!Files.exists(path)) {
             Files.createFile(path);
@@ -76,37 +86,48 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         // Читаем данные из файла
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path.toString()));) {
             while (bufferedReader.ready()) {
-                String s = bufferedReader.readLine();
-                List<String> taskData = List.of(s.split(","));
-                id = Integer.parseInt(taskData.getFirst());
+                String data = bufferedReader.readLine();
+                List<String> taskData = List.of(data.split(","));
+                taskId = Integer.parseInt(taskData.getFirst());
                 taskType = TaskType.valueOf(taskData.get(1));
-                name = taskData.get(2);
+                taskName = taskData.get(2);
                 taskStatus = TaskStatus.valueOf(taskData.get(3));
                 description = taskData.get(4);
+
                 if (taskType == TaskType.SUBTASK) {
                     epicTaskId = Integer.parseInt(taskData.get(5));
                 }
                 // Создаем задачи и помещаем их в список
                 if (taskType == TaskType.TASK) {
-                    task = new Task(name, description, taskStatus);
-                    task.setTaskId(id);
+                    task = new Task(taskName, description, taskStatus);
+                    task.setTaskId(taskId);
                     taskList.add(task);
                 } else if (taskType == TaskType.EPICTASK) {
-                    epicTask = new EpicTask(name, description);
-                    epicTask.setTaskId(id);
+                    epicTask = new EpicTask(taskName, description);
+                    epicTask.setTaskId(taskId);
+                    epicTaskHashMap.put(epicTask.getTaskId(), epicTask);
                     taskList.add(epicTask);
                 } else if (taskType == TaskType.SUBTASK) {
-                    subTask = new SubTask(name, description, taskStatus, epicTask);
-                    subTask.setTaskId(id);
+                    EpicTask mainEpicTask = epicTaskHashMap.get(epicTaskId);
+                    subTask = new SubTask(taskName, description, taskStatus, mainEpicTask);
+                    subTask.setTaskId(taskId);
+                    mainEpicTask.addSubTask(subTask);
                     taskList.add(subTask);
                 }
                 // Регулируем генератор
-                InMemoryTaskManager.taskIdCounter = id;
+                InMemoryTaskManager.taskIdCounter = taskId;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return taskList;
+    }
+    static String historyToString() {
+        return null;
+    }
+
+    static List<Integer> historyFromString(String value) {
+        return  null;
     }
     @Override
     public String toString() {

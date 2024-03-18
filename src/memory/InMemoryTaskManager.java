@@ -21,7 +21,7 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
     private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
     public static int taskIdCounter = 0;
-    TaskHistory taskHistory = new InMemoryTaskHistory();
+    private final TaskHistory taskHistory = new InMemoryTaskHistory();
 
     public HashMap<Integer, Task> getAllTypeTasks() {
         return allTypeTasks;
@@ -37,6 +37,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     public HashMap<Integer, SubTask> getSubTasks() {
         return subTasks;
+    }
+
+    public TaskHistory getTaskHistory() {
+        return taskHistory;
     }
 
     public static int taskIdGenerator() {
@@ -136,14 +140,14 @@ public class InMemoryTaskManager implements TaskManager {
                 Task task = new Task(taskName, taskDescription, taskStatus);
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
-                new FileBackedTaskManager().save(task);
+                new FileBackedTaskManager().save(task, false);
                 break;
 
             case 2:
                 EpicTask epicTask = new EpicTask(taskName, taskDescription);
                 epicTasks.put(epicTask.getTaskId(), epicTask);
                 allTypeTasks.put(epicTask.getTaskId(), epicTask);
-                new FileBackedTaskManager().save(epicTask);
+                new FileBackedTaskManager().save(epicTask, false);
                 break;
 
             case 3:
@@ -167,7 +171,7 @@ public class InMemoryTaskManager implements TaskManager {
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
                 allTypeTasks.put(subTask.getTaskId(), subTask);
-                new FileBackedTaskManager().save(subTask);
+                new FileBackedTaskManager().save(subTask, false);
         }
         System.out.println("Задача добавлена!");
     }
@@ -201,7 +205,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void findTaskById(int taskId) {
+    public void findTaskById(int taskId) throws IOException {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -220,6 +224,7 @@ public class InMemoryTaskManager implements TaskManager {
         UserInterface.tasksHeaderPrint();
         showTask(task);
         taskHistory.addTaskInHistory(task);
+        new FileBackedTaskManager().save(task, true);
         System.out.print("Нажмите Enter чтобы продолжить...");
         scanner.nextLine();
     }

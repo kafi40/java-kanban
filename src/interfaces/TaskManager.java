@@ -17,7 +17,7 @@ public interface TaskManager {
 
     void clearTasks(int command);
 
-    void findTaskById(int taskId);
+    void findTaskById(int taskId) throws IOException;
 
     void deleteTaskById(int taskId);
 
