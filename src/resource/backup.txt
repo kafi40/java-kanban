@@ -1,6 +1,8 @@
-1,TASK,1,NEW,1,
-2,EPICTASK,2,NEW,2,
-3,EPICTASK,3,NEW,3,
-4,SUBTASK,aaa,NEW,aaa,3
-5,SUBTASK,bbb,IN_PROGRESS,bbb,3
-6,SUBTASK,ccc,NEW,ccc,2
+id,type,name,status,description,epic
+1,TASK,Сходить в магазин,NEW,Купить хлеб,
+2,TASK,Купить билеты в кино,IN_PROGRESS,Сеанс в субботу,
+3,EPICTASK,Организовать день рождения,NEW,Успеть до мая,
+4,SUBTASK,Выбрать ресторан,NEW,Кристалл,3
+5,SUBTASK,Купить украшения,NEW,Шарики декор,3
+6,SUBTASK,Список гостей,NEW,Не определен,3
+7,EPICTASK,Стать разработчиком,NEW,До конца года,

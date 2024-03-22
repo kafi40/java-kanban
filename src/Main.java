@@ -7,7 +7,6 @@ import task.Task;
 import util.Parameters;
 import util.UserInterface;
 import util.Utils;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -33,7 +32,6 @@ public class Main {
                 inMemoryTaskManager.getSubTasks().put(t.getTaskId(), (SubTask) t);
             }
         }
-
         for (Task t : taskHistoryList) {
             taskHistory.addTaskInHistory(t);
         }

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
-
     private final HashMap<Integer, Task> allTypeTasks = new HashMap<>();
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
@@ -206,7 +205,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void findTaskById(int taskId) throws IOException {
-
         Scanner scanner = new Scanner(System.in);
 
         if (taskId == 0) return;
@@ -340,7 +338,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public  void getHistory() {
-
         Scanner scanner = new Scanner(System.in);
         List<Task> tempList =  taskHistory.getHistory();
 
@@ -351,17 +348,25 @@ public class InMemoryTaskManager implements TaskManager {
         scanner.nextLine();
     }
 
-    public void createTasksScript() {
+    public void createTasksScript() throws IOException {
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
+        fileBackedTaskManager.save(task, false);
         Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
+        fileBackedTaskManager.save(task2, false);
         EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
+        fileBackedTaskManager.save(epicTask, false);
         SubTask subTask = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
-        SubTask subTask2 = new SubTask("Купить украшения", "Шарики, декор", TaskStatus.NEW, epicTask);
+        fileBackedTaskManager.save(subTask, false);
+        SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор", TaskStatus.NEW, epicTask);
+        fileBackedTaskManager.save(subTask2, false);
         SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
+        fileBackedTaskManager.save(subTask3, false);
         epicTask.addSubTask(subTask);
         epicTask.addSubTask(subTask2);
         epicTask.addSubTask(subTask3);
         EpicTask epicTask2 = new EpicTask("Стать разработчиком", "До конца года");
+        fileBackedTaskManager.save(epicTask2, false);
         List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask2, subTask3, epicTask2);
 
         for (Task t : listScript) {

@@ -17,7 +17,7 @@ public class Task {
         this.taskStatus = taskStatus;
     }
 
-    public int getTaskId() {
+    public Integer getTaskId() {
         return taskId;
     }
 
