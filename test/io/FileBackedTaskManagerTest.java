@@ -3,6 +3,7 @@ package io;
 import enums.TaskStatus;
 import memory.InMemoryTaskHistory;
 import memory.InMemoryTaskManager;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.EpicTask;
@@ -33,7 +34,6 @@ public class FileBackedTaskManagerTest {
         task = new Task("Name", "Description", TaskStatus.NEW);
         epicTask = new EpicTask("Name", "Description");
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
-
     }
 
     @Test
@@ -43,18 +43,12 @@ public class FileBackedTaskManagerTest {
         taskHistory.addTaskInHistory(subTask);
         tasksList = taskHistory.getHistory();
 
-        try {
-            Files.delete(Path.of("src/resource", "history.txt"));
-        } catch (IOException e) {
-
-        }
         new FileBackedTaskManager().save(task, true);
         new FileBackedTaskManager().save(epicTask, true);
         new FileBackedTaskManager().save(subTask, true);
         List<Task>tasksListBackup = new FileBackedTaskManager().getData(true);
 
         assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
-        Files.delete(Path.of("src/resource", "history.txt"));
     }
 
     @Test
@@ -64,17 +58,17 @@ public class FileBackedTaskManagerTest {
         taskList.add(epicTask);
         taskList.add(subTask);
 
-        try {
-            Files.delete(Path.of("src/resource", "backup.txt"));
-        } catch (Exception e) {
-
-        }
         new FileBackedTaskManager().save(task, false);
         new FileBackedTaskManager().save(epicTask, false);
         new FileBackedTaskManager().save(subTask, false);
         List<Task>tasksListBackup = new FileBackedTaskManager().getData(false);
 
         assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
+    }
+
+    @AfterAll
+    public static void afterAll() throws IOException {
+        Files.delete(Path.of("src/resource", "history.txt"));
         Files.delete(Path.of("src/resource", "backup.txt"));
     }
 }
