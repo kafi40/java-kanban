@@ -9,6 +9,8 @@ import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +43,7 @@ public class FileBackedTaskManagerTest {
         taskHistory.addTaskInHistory(subTask);
         tasksList = taskHistory.getHistory();
 
+        File.createTempFile("src/resource", "history.txt");
         new FileBackedTaskManager().save(task, true);
         new FileBackedTaskManager().save(epicTask, true);
         new FileBackedTaskManager().save(subTask, true);
@@ -48,7 +51,6 @@ public class FileBackedTaskManagerTest {
 
         assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
         Files.delete(Path.of("src/resource", "history.txt"));
-
     }
 
     @Test
@@ -58,6 +60,7 @@ public class FileBackedTaskManagerTest {
         taskList.add(epicTask);
         taskList.add(subTask);
 
+        File.createTempFile("src/resource", "backup.txt");
         new FileBackedTaskManager().save(task, false);
         new FileBackedTaskManager().save(epicTask, false);
         new FileBackedTaskManager().save(subTask, false);
@@ -65,6 +68,5 @@ public class FileBackedTaskManagerTest {
 
         assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
         Files.delete(Path.of("src/resource", "backup.txt"));
-
     }
 }
