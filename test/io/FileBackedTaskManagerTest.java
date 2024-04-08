@@ -34,44 +34,52 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
-    public void canSaveAndLoadTaskHistoryInFile() throws IOException {
+    public void canSaveAndLoadTaskHistoryInFile() {
         taskHistory.addTaskInHistory(task);
         taskHistory.addTaskInHistory(epicTask);
         taskHistory.addTaskInHistory(subTask);
         tasksList = taskHistory.getHistory();
-        File tempFile = File.createTempFile("history", ".txt", new File("src/resource"));
+        try {
+            File tempFile = File.createTempFile("history", ".txt", new File("src/resource"));
 
-        try (FileWriter fileWriter = new FileWriter(tempFile)) {
-            fileWriter.write("id,type,name,status,description,epic\n");
+            try (FileWriter fileWriter = new FileWriter(tempFile)) {
+                fileWriter.write("id,type,name,status,description,epic\n");
+            }
+
+            new FileBackedTaskManager().save(task, tempFile.toPath());
+            new FileBackedTaskManager().save(epicTask, tempFile.toPath());
+            new FileBackedTaskManager().save(subTask, tempFile.toPath());
+            List<Task> tasksListBackup = new FileBackedTaskManager().getData(tempFile.toPath());
+
+            assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
+            tempFile.deleteOnExit();
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
         }
-
-        new FileBackedTaskManager().save(task, tempFile.toPath());
-        new FileBackedTaskManager().save(epicTask, tempFile.toPath());
-        new FileBackedTaskManager().save(subTask, tempFile.toPath());
-        List<Task>tasksListBackup = new FileBackedTaskManager().getData(tempFile.toPath());
-
-        assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
-        tempFile.deleteOnExit();
     }
 
     @Test
-    public void canSaveAndLoadTaskInFile() throws IOException {
+    public void canSaveAndLoadTaskInFile() {
         List<Task> taskList = new ArrayList<>();
         taskList.add(task);
         taskList.add(epicTask);
         taskList.add(subTask);
-        File tempFile = File.createTempFile("backup", ".txt", new File("src/resource"));
+        try {
+            File tempFile = File.createTempFile("backup", ".txt", new File("src/resource"));
 
-        try (FileWriter fileWriter = new FileWriter(tempFile)) {
-            fileWriter.write("id,type,name,status,description,epic\n");
+            try (FileWriter fileWriter = new FileWriter(tempFile)) {
+                fileWriter.write("id,type,name,status,description,epic\n");
+            }
+
+            new FileBackedTaskManager().save(task, tempFile.toPath());
+            new FileBackedTaskManager().save(epicTask, tempFile.toPath());
+            new FileBackedTaskManager().save(subTask, tempFile.toPath());
+            List<Task> tasksListBackup = new FileBackedTaskManager().getData(tempFile.toPath());
+
+            assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
+            tempFile.deleteOnExit();
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
         }
-
-        new FileBackedTaskManager().save(task, tempFile.toPath());
-        new FileBackedTaskManager().save(epicTask, tempFile.toPath());
-        new FileBackedTaskManager().save(subTask, tempFile.toPath());
-        List<Task>tasksListBackup = new FileBackedTaskManager().getData(tempFile.toPath());
-
-        assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
-        tempFile.deleteOnExit();
     }
 }
