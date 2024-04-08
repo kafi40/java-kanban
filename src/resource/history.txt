@@ -1,4 +1,0 @@
-id,type,name,status,description,epic
-1,TASK,Сходить в магазин,NEW,Купить хлеб,
-4,SUBTASK,Выбрать ресторан,NEW,Кристалл,3
-7,EPICTASK,Стать разработчиком,NEW,До конца года,

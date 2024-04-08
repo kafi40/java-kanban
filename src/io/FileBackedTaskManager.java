@@ -42,7 +42,7 @@ public class FileBackedTaskManager {
         if (!Files.exists(path)) {
             Files.createFile(path);
             try (FileWriter fileWriter = new FileWriter(path.toString())) {
-                fileWriter.write("id,type,name,status,description,epic");
+                fileWriter.write("id,type,name,status,description,epic\n");
             }
         }
         // Создаем объект для записи задачи в файл
