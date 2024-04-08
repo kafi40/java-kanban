@@ -43,7 +43,7 @@ public class FileBackedTaskManagerTest {
         taskHistory.addTaskInHistory(subTask);
         tasksList = taskHistory.getHistory();
 
-        File.createTempFile("src/resource", "history.txt");
+        Files.delete(Path.of("src/resource", "history.txt"));
         new FileBackedTaskManager().save(task, true);
         new FileBackedTaskManager().save(epicTask, true);
         new FileBackedTaskManager().save(subTask, true);
@@ -60,7 +60,7 @@ public class FileBackedTaskManagerTest {
         taskList.add(epicTask);
         taskList.add(subTask);
 
-        File.createTempFile("src/resource", "backup.txt");
+        Files.delete(Path.of("src/resource", "backup.txt"));
         new FileBackedTaskManager().save(task, false);
         new FileBackedTaskManager().save(epicTask, false);
         new FileBackedTaskManager().save(subTask, false);
