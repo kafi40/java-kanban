@@ -50,6 +50,7 @@ public class FileBackedTaskManagerTest {
         List<Task>tasksListBackup = new FileBackedTaskManager().getData(TASK_HISTORY_BACKUP_PATH_TEST);
 
         assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
+        Files.delete(TASK_HISTORY_BACKUP_PATH_TEST);
     }
 
     @Test
@@ -65,11 +66,6 @@ public class FileBackedTaskManagerTest {
         List<Task>tasksListBackup = new FileBackedTaskManager().getData(TASK_BACKUP_PATH_TEST);
 
         assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
-    }
-
-    @AfterAll
-    public static void afterAll() throws IOException {
-        Files.delete(TASK_HISTORY_BACKUP_PATH_TEST);
         Files.delete(TASK_BACKUP_PATH_TEST);
     }
 }
