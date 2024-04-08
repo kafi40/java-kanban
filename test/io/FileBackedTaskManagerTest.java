@@ -3,20 +3,18 @@ package io;
 import enums.TaskStatus;
 import memory.InMemoryTaskHistory;
 import memory.InMemoryTaskManager;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static util.Parameters.*;
 
 public class FileBackedTaskManagerTest {
     public static InMemoryTaskManager taskManager;
@@ -25,8 +23,6 @@ public class FileBackedTaskManagerTest {
     static public EpicTask epicTask;
     static public SubTask subTask;
     public List tasksList;
-    public static final Path TASK_BACKUP_PATH_TEST = Path.of("src/resource", "backupTest.txt");
-    public static final Path TASK_HISTORY_BACKUP_PATH_TEST = Path.of("src/resource", "historyTest.txt");
 
     @BeforeAll
     public static void beforeAll() {
@@ -43,14 +39,19 @@ public class FileBackedTaskManagerTest {
         taskHistory.addTaskInHistory(epicTask);
         taskHistory.addTaskInHistory(subTask);
         tasksList = taskHistory.getHistory();
+        File tempFile = File.createTempFile("history", ".txt", new File("src/resource"));
 
-        new FileBackedTaskManager().save(task, TASK_HISTORY_BACKUP_PATH_TEST);
-        new FileBackedTaskManager().save(epicTask, TASK_HISTORY_BACKUP_PATH_TEST);
-        new FileBackedTaskManager().save(subTask, TASK_HISTORY_BACKUP_PATH_TEST);
-        List<Task>tasksListBackup = new FileBackedTaskManager().getData(TASK_HISTORY_BACKUP_PATH_TEST);
+        try (FileWriter fileWriter = new FileWriter(tempFile)) {
+            fileWriter.write("id,type,name,status,description,epic\n");
+        }
+
+        new FileBackedTaskManager().save(task, tempFile.toPath());
+        new FileBackedTaskManager().save(epicTask, tempFile.toPath());
+        new FileBackedTaskManager().save(subTask, tempFile.toPath());
+        List<Task>tasksListBackup = new FileBackedTaskManager().getData(tempFile.toPath());
 
         assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
-        Files.delete(TASK_HISTORY_BACKUP_PATH_TEST);
+        tempFile.deleteOnExit();
     }
 
     @Test
@@ -59,13 +60,18 @@ public class FileBackedTaskManagerTest {
         taskList.add(task);
         taskList.add(epicTask);
         taskList.add(subTask);
+        File tempFile = File.createTempFile("backup", ".txt", new File("src/resource"));
 
-        new FileBackedTaskManager().save(task, TASK_BACKUP_PATH_TEST);
-        new FileBackedTaskManager().save(epicTask, TASK_BACKUP_PATH_TEST);
-        new FileBackedTaskManager().save(subTask, TASK_BACKUP_PATH_TEST);
-        List<Task>tasksListBackup = new FileBackedTaskManager().getData(TASK_BACKUP_PATH_TEST);
+        try (FileWriter fileWriter = new FileWriter(tempFile)) {
+            fileWriter.write("id,type,name,status,description,epic\n");
+        }
+
+        new FileBackedTaskManager().save(task, tempFile.toPath());
+        new FileBackedTaskManager().save(epicTask, tempFile.toPath());
+        new FileBackedTaskManager().save(subTask, tempFile.toPath());
+        List<Task>tasksListBackup = new FileBackedTaskManager().getData(tempFile.toPath());
 
         assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
-        Files.delete(TASK_BACKUP_PATH_TEST);
+        tempFile.deleteOnExit();
     }
 }
