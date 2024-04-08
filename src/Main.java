@@ -4,11 +4,11 @@ import memory.InMemoryTaskManager;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
-import util.Parameters;
 import util.UserInterface;
 import util.Utils;
 import java.io.IOException;
 import java.util.List;
+import static util.Parameters.*;
 
 public class Main {
 
@@ -17,8 +17,8 @@ public class Main {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         TaskHistory taskHistory = inMemoryTaskManager.getTaskHistory();
         int taskId;
-        List<Task> taskList = fileBackedTaskManager.getData(false);
-        List<Task> taskHistoryList = fileBackedTaskManager.getData(true);
+        List<Task> taskList = fileBackedTaskManager.getData(TASK_BACKUP_PATH);
+        List<Task> taskHistoryList = fileBackedTaskManager.getData(TASK_HISTORY_BACKUP_PATH);
 
         for (Task t : taskList) {
             inMemoryTaskManager.getAllTypeTasks().put(t.getTaskId(), t);
@@ -38,11 +38,11 @@ public class Main {
             OUTER: while (true) {
             inMemoryTaskManager.setEpicTaskStatus();
             UserInterface.mainMenuPrint();
-            int command = Utils.checkCommand(Parameters.MAIN_MENU_COMMAND_COUNT);
+            int command = Utils.checkCommand(MAIN_MENU_COMMAND_COUNT);
             switch (command) {
                 case 1:
                     UserInterface.addTaskMenuPrint();
-                    command = Utils.checkCommand(Parameters.ADD_MENU_COMMAND_COUNT);
+                    command = Utils.checkCommand(ADD_MENU_COMMAND_COUNT);
                     switch (command) {
                         case 1:
                             System.out.println("Добавить обычную задачу");
@@ -70,14 +70,14 @@ public class Main {
                 case 2:
                     System.out.println("Выберите, что отобразить");
                     UserInterface.showTasksMenuPrint();
-                    command = Utils.checkCommand(Parameters.SHOW_TASKS_COMMAND_COUNT);
+                    command = Utils.checkCommand(SHOW_TASKS_COMMAND_COUNT);
                     inMemoryTaskManager.showTasks(command);
                     break;
 
                 case 3:
                     System.out.println("Выберите, что удалить");
                     UserInterface.showTasksMenuPrint();
-                    command = Utils.checkCommand(Parameters.SHOW_TASKS_COMMAND_COUNT);
+                    command = Utils.checkCommand(SHOW_TASKS_COMMAND_COUNT);
                     inMemoryTaskManager.clearTasks(command);
                     System.out.println("Задачи удалены!");
                     break;

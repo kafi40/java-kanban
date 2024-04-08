@@ -10,9 +10,10 @@ import task.Task;
 import util.Parameters;
 import util.UserInterface;
 import util.Utils;
-
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
+import static util.Parameters.*;
 
 public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> allTypeTasks = new HashMap<>();
@@ -133,26 +134,26 @@ public class InMemoryTaskManager implements TaskManager {
 
                 UserInterface.statusMenuPrint();
                 System.out.print("Выберите статус задачи: ");
-                command = Utils.checkCommand(Parameters.TASK_STATUS_COMMAND_COUNT);
+                command = Utils.checkCommand(TASK_STATUS_COMMAND_COUNT);
                 if (command == 0) return;
                 taskStatus = setTaskStatus(command);
                 Task task = new Task(taskName, taskDescription, taskStatus);
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
-                new FileBackedTaskManager().save(task, false);
+                new FileBackedTaskManager().save(task, TASK_BACKUP_PATH);
                 break;
 
             case 2:
                 EpicTask epicTask = new EpicTask(taskName, taskDescription);
                 epicTasks.put(epicTask.getTaskId(), epicTask);
                 allTypeTasks.put(epicTask.getTaskId(), epicTask);
-                new FileBackedTaskManager().save(epicTask, false);
+                new FileBackedTaskManager().save(epicTask, TASK_BACKUP_PATH);
                 break;
 
             case 3:
                 UserInterface.statusMenuPrint();
                 System.out.print("Выберите статус задачи: ");
-                command = Utils.checkCommand(Parameters.TASK_STATUS_COMMAND_COUNT);
+                command = Utils.checkCommand(TASK_STATUS_COMMAND_COUNT);
                 if (command == 0) return;
                 taskStatus = setTaskStatus(command);
                 int i = 0;
@@ -170,7 +171,7 @@ public class InMemoryTaskManager implements TaskManager {
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
                 allTypeTasks.put(subTask.getTaskId(), subTask);
-                new FileBackedTaskManager().save(subTask, false);
+                new FileBackedTaskManager().save(subTask, TASK_BACKUP_PATH);
         }
         System.out.println("Задача добавлена!");
     }
@@ -222,7 +223,7 @@ public class InMemoryTaskManager implements TaskManager {
         UserInterface.tasksHeaderPrint();
         showTask(task);
         taskHistory.addTaskInHistory(task);
-        new FileBackedTaskManager().save(task, true);
+        new FileBackedTaskManager().save(task, TASK_HISTORY_BACKUP_PATH);
         System.out.print("Нажмите Enter чтобы продолжить...");
         scanner.nextLine();
     }
@@ -311,7 +312,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicTasks.get(taskId) == null) {
             UserInterface.statusMenuPrint();
             System.out.print("Выберите статус задачи: ");
-            command = Utils.checkCommand(Parameters.TASK_STATUS_COMMAND_COUNT);
+            command = Utils.checkCommand(TASK_STATUS_COMMAND_COUNT);
             if (command == 0)
                 return;
             taskStatus = setTaskStatus(command);
@@ -351,22 +352,22 @@ public class InMemoryTaskManager implements TaskManager {
     public void createTasksScript() throws IOException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
-        fileBackedTaskManager.save(task, false);
+        fileBackedTaskManager.save(task, TASK_BACKUP_PATH);
         Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
-        fileBackedTaskManager.save(task2, false);
+        fileBackedTaskManager.save(task2, TASK_BACKUP_PATH);
         EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
-        fileBackedTaskManager.save(epicTask, false);
+        fileBackedTaskManager.save(epicTask, TASK_BACKUP_PATH);
         SubTask subTask = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
-        fileBackedTaskManager.save(subTask, false);
+        fileBackedTaskManager.save(subTask, TASK_BACKUP_PATH);
         SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор", TaskStatus.NEW, epicTask);
-        fileBackedTaskManager.save(subTask2, false);
+        fileBackedTaskManager.save(subTask2, TASK_BACKUP_PATH);
         SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
-        fileBackedTaskManager.save(subTask3, false);
+        fileBackedTaskManager.save(subTask3, TASK_BACKUP_PATH);
         epicTask.addSubTask(subTask);
         epicTask.addSubTask(subTask2);
         epicTask.addSubTask(subTask3);
         EpicTask epicTask2 = new EpicTask("Стать разработчиком", "До конца года");
-        fileBackedTaskManager.save(epicTask2, false);
+        fileBackedTaskManager.save(epicTask2, TASK_BACKUP_PATH);
         List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask2, subTask3, epicTask2);
 
         for (Task t : listScript) {

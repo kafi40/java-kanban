@@ -10,14 +10,13 @@ import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static util.Parameters.*;
 
 public class FileBackedTaskManagerTest {
     public static InMemoryTaskManager taskManager;
@@ -26,6 +25,8 @@ public class FileBackedTaskManagerTest {
     static public EpicTask epicTask;
     static public SubTask subTask;
     public List tasksList;
+    public static final Path TASK_BACKUP_PATH_TEST = Path.of("src/resource", "backupTest.txt");
+    public static final Path TASK_HISTORY_BACKUP_PATH_TEST = Path.of("src/resource", "historyTest.txt");
 
     @BeforeAll
     public static void beforeAll() {
@@ -43,10 +44,10 @@ public class FileBackedTaskManagerTest {
         taskHistory.addTaskInHistory(subTask);
         tasksList = taskHistory.getHistory();
 
-        new FileBackedTaskManager().save(task, true);
-        new FileBackedTaskManager().save(epicTask, true);
-        new FileBackedTaskManager().save(subTask, true);
-        List<Task>tasksListBackup = new FileBackedTaskManager().getData(true);
+        new FileBackedTaskManager().save(task, TASK_HISTORY_BACKUP_PATH_TEST);
+        new FileBackedTaskManager().save(epicTask, TASK_HISTORY_BACKUP_PATH_TEST);
+        new FileBackedTaskManager().save(subTask, TASK_HISTORY_BACKUP_PATH_TEST);
+        List<Task>tasksListBackup = new FileBackedTaskManager().getData(TASK_HISTORY_BACKUP_PATH_TEST);
 
         assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
     }
@@ -58,17 +59,17 @@ public class FileBackedTaskManagerTest {
         taskList.add(epicTask);
         taskList.add(subTask);
 
-        new FileBackedTaskManager().save(task, false);
-        new FileBackedTaskManager().save(epicTask, false);
-        new FileBackedTaskManager().save(subTask, false);
-        List<Task>tasksListBackup = new FileBackedTaskManager().getData(false);
+        new FileBackedTaskManager().save(task, TASK_BACKUP_PATH_TEST);
+        new FileBackedTaskManager().save(epicTask, TASK_BACKUP_PATH_TEST);
+        new FileBackedTaskManager().save(subTask, TASK_BACKUP_PATH_TEST);
+        List<Task>tasksListBackup = new FileBackedTaskManager().getData(TASK_BACKUP_PATH_TEST);
 
         assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
     }
 
     @AfterAll
     public static void afterAll() throws IOException {
-        Files.delete(Path.of("src/resource", "history.txt"));
-        Files.delete(Path.of("src/resource", "backup.txt"));
+        Files.delete(TASK_HISTORY_BACKUP_PATH_TEST);
+        Files.delete(TASK_BACKUP_PATH_TEST);
     }
 }

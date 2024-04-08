@@ -7,34 +7,26 @@ import memory.InMemoryTaskManager;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static util.Parameters.TASK_HISTORY_BACKUP_PATH;
+
 public class FileBackedTaskManager {
-    private Path path;
     // Список вынес в поле, если в истории нет просмотра эпика, но есть его подзадача.
     // Подзадача подтянет эпик из списка
     private final HashMap<Integer, EpicTask> epicTaskHashMap = new HashMap<>();
     private static List<Task> historyList = new ArrayList<>();
 
-    public void save(Task task, boolean isHistory) throws IOException {
+    public void save(Task task, Path path) throws IOException {
         String taskType;
         // Проверяем есть ли такая задача в истории
-        if (isHistory && historyList.contains(task)) {
+        if (path.equals(TASK_HISTORY_BACKUP_PATH) && historyList.contains(task)) {
             return;
-        }
-        // Проверяем куда сохранять задачу
-        if (isHistory) {
-            path = Paths.get("src/resource", "history.txt");
-            historyList.add(task);
-        } else {
-            path = Paths.get("src/resource", "backup.txt");
         }
         // Если файл не существует, создаем его
         if (!Files.exists(path)) {
@@ -69,7 +61,7 @@ public class FileBackedTaskManager {
     }
 
     //Получаем данные из файла
-    public List<Task> getData(boolean isHistory) throws IOException {
+    public List<Task> getData(Path path) throws IOException {
         List<Task> taskList = new ArrayList<>();
         int taskId;
         int epicTaskId = 0;
@@ -81,12 +73,6 @@ public class FileBackedTaskManager {
         EpicTask epicTask;
         SubTask subTask;
 
-        // Проверяем откуда читать задачу
-        if (isHistory) {
-            path = Paths.get("src/resource", "history.txt");
-        } else {
-            path = Paths.get("src/resource", "backup.txt");
-        }
         // Если файл не существует, создаем его
         if (!Files.exists(path)) {
             Files.createFile(path);
@@ -138,7 +124,7 @@ public class FileBackedTaskManager {
         } catch (Exception e) {
             System.out.println("Файл " + path.getFileName() + " не удалось прочесть");
         }
-        if (isHistory) {
+        if (path.equals(TASK_HISTORY_BACKUP_PATH)) {
             historyList = taskList;
         }
         return taskList;
