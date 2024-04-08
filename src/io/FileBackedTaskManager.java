@@ -13,8 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static util.Parameters.TASK_HISTORY_BACKUP_PATH;
+import static util.Parameters.*;
 
 public class FileBackedTaskManager {
     // Список вынес в поле, если в истории нет просмотра эпика, но есть его подзадача.
@@ -129,6 +128,4 @@ public class FileBackedTaskManager {
         }
         return taskList;
     }
-
-
 }
