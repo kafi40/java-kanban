@@ -10,6 +10,8 @@ import task.SubTask;
 import task.Task;
 import util.Managers;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -21,6 +23,7 @@ public class FileBackedTaskManagerTest {
     static public EpicTask epicTask;
     static public SubTask subTask;
     public List tasksList;
+
     @BeforeAll
     public static void beforeAll() {
         taskManager = (InMemoryTaskManager) Managers.getDefault();
@@ -28,6 +31,7 @@ public class FileBackedTaskManagerTest {
         task = new Task("Name", "Description", TaskStatus.NEW);
         epicTask = new EpicTask("Name", "Description");
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
+
     }
 
     @Test
@@ -43,6 +47,7 @@ public class FileBackedTaskManagerTest {
         List<Task>tasksListBackup = new FileBackedTaskManager().getData(true);
 
         assertArrayEquals(tasksListBackup.toArray(), tasksList.toArray());
+        Files.delete(Path.of("src/resource", "history.txt"));
 
     }
 
@@ -59,6 +64,7 @@ public class FileBackedTaskManagerTest {
         List<Task>tasksListBackup = new FileBackedTaskManager().getData(false);
 
         assertArrayEquals(tasksListBackup.toArray(), taskList.toArray());
+        Files.delete(Path.of("src/resource", "backup.txt"));
 
     }
 }
