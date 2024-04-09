@@ -16,28 +16,26 @@ import java.util.List;
 import static util.Parameters.*;
 
 public class FileBackedTaskManager {
-    // Список вынес в поле, если в истории нет просмотра эпика, но есть его подзадача.
-    // Подзадача подтянет эпик из списка
     private final HashMap<Integer, EpicTask> epicTaskHashMap = new HashMap<>();
     private static List<Task> historyList = new ArrayList<>();
 
     public void save(Task task, Path path) throws IOException {
         String taskType;
-        // Проверяем есть ли такая задача в истории
+
         if (path.equals(TASK_HISTORY_BACKUP_PATH) && historyList.contains(task)) {
             return;
         }
-        // Если файл не существует, создаем его
+
         if (!Files.exists(path)) {
             Files.createFile(path);
             try (FileWriter fileWriter = new FileWriter(path.toString())) {
                 fileWriter.write("id,type,name,status,description,epic\n");
             }
         }
-        // Создаем объект для записи задачи в файл
+
         try (FileWriter fileWriter = new FileWriter(path.toString(), true)) {
 
-            // Определяем тип задачи
+
             if (task.getClass() == Task.class) {
                 taskType = String.valueOf(TaskType.TASK);
             } else if (task.getClass() == EpicTask.class) {
@@ -54,12 +52,11 @@ public class FileBackedTaskManager {
                     task.getTaskStatus(),
                     task.getTaskDescription(),
                     task.getClass() == SubTask.class ? ((SubTask) task).getEpicTask().getTaskId() : ""));
-        } catch (Exception e) {
-            System.out.println("Не удалось записать задачу");
+        } catch (ManagerSaveException e) {
+            throw new ManagerSaveException("Не удалось записать задачу");
         }
     }
 
-    //Получаем данные из файла
     public List<Task> getData(Path path) throws IOException {
         List<Task> taskList = new ArrayList<>();
         int taskId;
@@ -72,14 +69,13 @@ public class FileBackedTaskManager {
         EpicTask epicTask;
         SubTask subTask;
 
-        // Если файл не существует, создаем его
         if (!Files.exists(path)) {
             Files.createFile(path);
             try (FileWriter fileWriter = new FileWriter(path.toString())) {
                 fileWriter.write("id,type,name,status,description,epic\n");
             }
         }
-        // Читаем данные из файла
+
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path.toString()))) {
             bufferedReader.readLine();
             while (bufferedReader.ready()) {
@@ -96,7 +92,7 @@ public class FileBackedTaskManager {
                 if (taskId < 1) {
                     throw new ManagerSaveException("ID не может быть меньше 1");
                 }
-                // Создаем задачи и помещаем их в список
+
                 if (taskType == TaskType.TASK) {
                     task = new Task(taskName, description, taskStatus);
                     task.setTaskId(taskId);
@@ -115,7 +111,7 @@ public class FileBackedTaskManager {
                 } else {
                     throw new ManagerSaveException("Не удалось восстановить задачу из файла");
                 }
-                // Регулируем генератор
+
                 if (InMemoryTaskManager.taskIdCounter < taskId) {
                     InMemoryTaskManager.taskIdCounter = taskId;
                 }
