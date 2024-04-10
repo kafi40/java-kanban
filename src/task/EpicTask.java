@@ -1,11 +1,14 @@
 package task;
 
 import enums.TaskStatus;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class EpicTask extends Task {
 
     private ArrayList<SubTask> subTasks;
+    private LocalDateTime endTime;
 
     public EpicTask(String taskName, String taskDescription) {
         super(taskName, taskDescription, TaskStatus.NEW);
@@ -24,4 +27,11 @@ public class EpicTask extends Task {
         subTasks.clear();
     }
 
+    @Override
+    public LocalDateTime getEndTime() {
+        for (SubTask subTask : subTasks) {
+
+        }
+        return endTime;
+    }
 }

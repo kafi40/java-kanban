@@ -10,7 +10,11 @@ import task.Task;
 import util.UserInterface;
 import util.Utils;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import static util.Parameters.*;
 
 public class InMemoryTaskManager implements TaskManager {
@@ -18,6 +22,8 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
     private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
+    private final TreeSet<Task> taskTreeSet = new TreeSet<>();
+    private boolean isSorted = false;
     public static int taskIdCounter = 0;
     private final TaskHistory taskHistory = new InMemoryTaskHistory();
 
@@ -92,7 +98,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public  void showTask(Task task) {
+    public void showTask(Task task) {
         String taskStatus;
         String epicTask;
 
@@ -106,11 +112,18 @@ public class InMemoryTaskManager implements TaskManager {
             case IN_PROGRESS -> "В процессе";
             case DONE -> "Выполнена";
         };
-        System.out.print(Utils.tableFormatter(String.valueOf(task.getTaskId())));
-        System.out.print(Utils.tableFormatter(task.getTaskName()));
-        System.out.print(Utils.tableFormatter(task.getTaskDescription()));
-        System.out.print(Utils.tableFormatter(taskStatus));
-        System.out.println(Utils.tableFormatter(epicTask));
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:ss");
+        System.out.printf("%-10d %-30s %-30s %-15s %-30s %-20s %-20s\n",
+                task.getTaskId(),
+                task.getTaskName(),
+                task.getTaskDescription(),
+                taskStatus,
+                epicTask,
+                Optional.ofNullable(task.getStartTime()).map(localDateTime ->
+                        localDateTime.format(dateTimeFormatter)).orElse(""),
+                Optional.ofNullable(task.getEndTime()).map(localDateTime ->
+                        localDateTime.format(dateTimeFormatter)).orElse("")
+        );
     }
 
     @Override
@@ -120,6 +133,8 @@ public class InMemoryTaskManager implements TaskManager {
         String taskName;
         String taskDescription;
         TaskStatus taskStatus;
+        LocalDateTime startTime;
+        int duration;
 
         System.out.print("Введите название: ");
         taskName = scanner.nextLine();
@@ -136,6 +151,17 @@ public class InMemoryTaskManager implements TaskManager {
                 if (command == 0) return;
                 taskStatus = setTaskStatus(command);
                 Task task = new Task(taskName, taskDescription, taskStatus);
+                System.out.println("Установите дату и время начала задачи");
+                startTime = Utils.localDateTimeFormatter();
+                task.setStartTime(startTime);
+                System.out.println("Enter - пропустить");
+                System.out.print("Введите продолжительность задачи в минутах: ");
+                Optional<Integer> optionalDuration = Utils.checkDuration();
+                if (optionalDuration.isPresent()) {
+                    duration = optionalDuration.get();
+                    if (duration == 0) return;
+                    task.setDuration(duration);
+                }
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
                 new FileBackedTaskManager().save(task, TASK_BACKUP_PATH);
@@ -166,11 +192,20 @@ public class InMemoryTaskManager implements TaskManager {
                 if (command == 0) return;
                 int mainEpicTaskId = epicTasksIdList.get(command - 1);
                 SubTask subTask = new SubTask(taskName, taskDescription, taskStatus, epicTasks.get(mainEpicTaskId));
+                System.out.println("Enter - пропустить");
+                System.out.print("Введите продолжительность задачи в минутах: ");
+                optionalDuration = Utils.checkDuration();
+                if (optionalDuration.isPresent()) {
+                    duration = optionalDuration.get();
+                    if (duration == 0) return;
+                    subTask.setDuration(duration);
+                }
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
                 allTypeTasks.put(subTask.getTaskId(), subTask);
                 new FileBackedTaskManager().save(subTask, TASK_BACKUP_PATH);
         }
+        isSorted = false;
         System.out.println("Задача добавлена!");
     }
 
@@ -251,36 +286,30 @@ public class InMemoryTaskManager implements TaskManager {
         switch (command) {
             case 1:
                 UserInterface.tasksHeaderPrint();
-                for (Task t : tasks.values()) {
-                    showTask(t);
-                }
-                for (EpicTask et : epicTasks.values()) {
+                tasks.values().forEach(this::showTask);
+                epicTasks.values().forEach(et -> {
                     showTask(et);
-                    for (SubTask st : et.getSubTasks()) {
-                        showTask(st);
-                    }
-                }
+                    et.getSubTasks().forEach(this::showTask);
+                });
                 break;
 
             case 2:
                 UserInterface.tasksHeaderPrint();
-                for (Task t : tasks.values()) {
-                    showTask(t);
-                }
+                tasks.values().forEach(this::showTask);
                 break;
 
             case 3:
                 UserInterface.tasksHeaderPrint();
-                for (EpicTask et : epicTasks.values()) {
-                    showTask(et);
-                }
+                epicTasks.values().forEach(this::showTask);
                 break;
 
             case 4:
                 UserInterface.tasksHeaderPrint();
-                for (SubTask st : subTasks.values()) {
-                    showTask(st);
-                }
+                subTasks.values().forEach(this::showTask);
+                break;
+            case 5:
+                UserInterface.tasksHeaderPrint();
+                getPrioritizedTasks().forEach(this::showTask);
                 break;
 
             case 0:
@@ -340,26 +369,46 @@ public class InMemoryTaskManager implements TaskManager {
         Scanner scanner = new Scanner(System.in);
         List<Task> tempList =  taskHistory.getHistory();
 
-        for (Task t : tempList) {
-            showTask(t);
-        }
+        tempList.forEach(this::showTask);
         System.out.print("Нажмите Enter чтобы продолжить...");
         scanner.nextLine();
+    }
+
+    @Override
+    public TreeSet<Task> getPrioritizedTasks() {
+        if (!isSorted) {
+            Set<Task> taskList = allTypeTasks.values().stream()
+                    .filter(task -> task.getStartTime() != null)
+                    .collect(Collectors.toSet());
+            taskTreeSet.addAll(taskList);
+            isSorted = true;
+        }
+        return taskTreeSet;
     }
 
     public void createTasksScript() throws IOException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
+        task.setStartTime(LocalDateTime.now());
+        task.setDuration(60);
         fileBackedTaskManager.save(task, TASK_BACKUP_PATH);
         Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
+        task2.setStartTime(LocalDateTime.now().plusMinutes(120));
+        task2.setDuration(30);
         fileBackedTaskManager.save(task2, TASK_BACKUP_PATH);
         EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
         fileBackedTaskManager.save(epicTask, TASK_BACKUP_PATH);
         SubTask subTask = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
+        subTask.setStartTime(LocalDateTime.now().plusMinutes(10));
+        subTask.setDuration(40);
         fileBackedTaskManager.save(subTask, TASK_BACKUP_PATH);
         SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор", TaskStatus.NEW, epicTask);
+        subTask2.setStartTime(LocalDateTime.now().plusMinutes(240));
+        subTask2.setDuration(120);
         fileBackedTaskManager.save(subTask2, TASK_BACKUP_PATH);
         SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
+        subTask3.setStartTime(LocalDateTime.now().plusMinutes(30));
+        subTask3.setDuration(10);
         fileBackedTaskManager.save(subTask3, TASK_BACKUP_PATH);
         epicTask.addSubTask(subTask);
         epicTask.addSubTask(subTask2);

@@ -4,6 +4,7 @@ import task.Task;
 import enums.TaskStatus;
 
 import java.io.IOException;
+import java.util.TreeSet;
 
 public interface TaskManager {
 
@@ -26,4 +27,6 @@ public interface TaskManager {
     void editTaskById(int taskId);
 
     void getHistory();
+
+    TreeSet<Task> getPrioritizedTasks();
 }

@@ -36,15 +36,13 @@ public class UserInterface {
         System.out.println("2 - Обычные задачи");
         System.out.println("3 - Сложные задачи");
         System.out.println("4 - Подзадачи");
+        System.out.println("5 - Отсортированные задача");
         System.out.println("0 - Назад");
 
     }
 
     public static void tasksHeaderPrint() {
-        System.out.println(Utils.tableFormatter("ID") +
-                Utils.tableFormatter("Название") +
-                Utils.tableFormatter("Описание") +
-                Utils.tableFormatter("Статус") +
-                Utils.tableFormatter("Основная задача"));
+        System.out.printf("%-10s %-30s %-30s %-15s %-30s %-20s %-20s\n",
+                "ID", "Название", "Описание", "Статус", "Основная задача", "Начало", "Конец");
     }
 }
