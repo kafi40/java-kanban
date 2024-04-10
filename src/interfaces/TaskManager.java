@@ -1,7 +1,9 @@
 package interfaces;
 
 import task.Task;
-import util.TaskStatus;
+import enums.TaskStatus;
+
+import java.io.IOException;
 
 public interface TaskManager {
 
@@ -11,11 +13,11 @@ public interface TaskManager {
 
     void showTask(Task task);
 
-    void addTask(int command);
+    void addTask(int command) throws IOException;
 
     void clearTasks(int command);
 
-    void findTaskById(int taskId);
+    void findTaskById(int taskId) throws IOException;
 
     void deleteTaskById(int taskId);
 

@@ -1,21 +1,48 @@
+import interfaces.TaskHistory;
+import io.FileBackedTaskManager;
 import memory.InMemoryTaskManager;
-import util.*;
+import task.EpicTask;
+import task.SubTask;
+import task.Task;
+import util.UserInterface;
+import util.Utils;
+import java.io.IOException;
+import java.util.List;
+import static util.Parameters.*;
 
 public class Main {
 
-    public static void main(String[] args) {
-        System.out.println("Задачник - \"Всё успею!\"");
-
+    public static void main(String[] args) throws IOException {
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
+        TaskHistory taskHistory = inMemoryTaskManager.getTaskHistory();
         int taskId;
-        OUTER: while (true) {
+        List<Task> taskList = fileBackedTaskManager.getData(TASK_BACKUP_PATH);
+        List<Task> taskHistoryList = fileBackedTaskManager.getData(TASK_HISTORY_BACKUP_PATH);
+
+        for (Task t : taskList) {
+            inMemoryTaskManager.getAllTypeTasks().put(t.getTaskId(), t);
+            if (t.getClass() == Task.class) {
+                inMemoryTaskManager.getTasks().put(t.getTaskId(), t);
+            }
+            if (t.getClass() == EpicTask.class) {
+                inMemoryTaskManager.getEpicTasks().put(t.getTaskId(), (EpicTask) t);
+            }
+            if (t.getClass() == SubTask.class) {
+                inMemoryTaskManager.getSubTasks().put(t.getTaskId(), (SubTask) t);
+            }
+        }
+        for (Task t : taskHistoryList) {
+            taskHistory.addTaskInHistory(t);
+        }
+            OUTER: while (true) {
             inMemoryTaskManager.setEpicTaskStatus();
             UserInterface.mainMenuPrint();
-            int command = Utils.checkCommand(Parameters.MAIN_MENU_COMMAND_COUNT);
+            int command = Utils.checkCommand(MAIN_MENU_COMMAND_COUNT);
             switch (command) {
                 case 1:
                     UserInterface.addTaskMenuPrint();
-                    command = Utils.checkCommand(Parameters.ADD_MENU_COMMAND_COUNT);
+                    command = Utils.checkCommand(ADD_MENU_COMMAND_COUNT);
                     switch (command) {
                         case 1:
                             System.out.println("Добавить обычную задачу");
@@ -43,14 +70,14 @@ public class Main {
                 case 2:
                     System.out.println("Выберите, что отобразить");
                     UserInterface.showTasksMenuPrint();
-                    command = Utils.checkCommand(Parameters.SHOW_TASKS_COMMAND_COUNT);
+                    command = Utils.checkCommand(SHOW_TASKS_COMMAND_COUNT);
                     inMemoryTaskManager.showTasks(command);
                     break;
 
                 case 3:
                     System.out.println("Выберите, что удалить");
                     UserInterface.showTasksMenuPrint();
-                    command = Utils.checkCommand(Parameters.SHOW_TASKS_COMMAND_COUNT);
+                    command = Utils.checkCommand(SHOW_TASKS_COMMAND_COUNT);
                     inMemoryTaskManager.clearTasks(command);
                     System.out.println("Задачи удалены!");
                     break;
@@ -59,7 +86,7 @@ public class Main {
                     System.out.println("Поиск задачи по ID");
                     System.out.println("0 - Выйти");
                     System.out.print("Введите ID: ");
-                    taskId = Utils.checkId(InMemoryTaskManager.taskIdCounter);
+                    taskId = Utils.checkId();
                     if (taskId == 0)
                         continue;
                     inMemoryTaskManager.findTaskById(taskId);
@@ -69,7 +96,7 @@ public class Main {
                     System.out.println("Редактировать задачу по ID");
                     System.out.println("0 - Выйти");
                     System.out.print("Введите ID: ");
-                    taskId = Utils.checkId(InMemoryTaskManager.taskIdCounter);
+                    taskId = Utils.checkId();
                     if (taskId == 0)
                         continue;
                     inMemoryTaskManager.editTaskById(taskId);
@@ -79,7 +106,7 @@ public class Main {
                     System.out.println("Удалить задачу по ID");
                     System.out.println("0 - Выйти");
                     System.out.print("Введите ID: ");
-                    taskId = Utils.checkId(InMemoryTaskManager.taskIdCounter);
+                    taskId = Utils.checkId();
                     if (taskId == 0)
                         continue;
                     inMemoryTaskManager.deleteTaskById(taskId);

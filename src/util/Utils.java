@@ -21,7 +21,7 @@ public class Utils {
         }
     }
 
-    public static int checkId(int idCount) {
+    public static int checkId() {
         while (true) {
             Scanner scanner = new Scanner(System.in);
             int inputId;
@@ -29,7 +29,7 @@ public class Utils {
                 System.out.print("Такого ID нет! Попробуйте снова: ");
             } else {
                 inputId = scanner.nextInt();
-                if (inputId > idCount || idCount < 0) {
+                if (inputId < 0) {
                     System.out.print("Такого ID нет! Попробуйте снова: ");
                 } else {
                     return inputId;

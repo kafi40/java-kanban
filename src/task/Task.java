@@ -1,12 +1,12 @@
 package task;
 
 import memory.InMemoryTaskManager;
-import util.TaskStatus;
+import enums.TaskStatus;
 import java.util.Objects;
 
 public class Task {
 
-    private final Integer taskId = InMemoryTaskManager.taskIdGenerator();
+    private Integer taskId = InMemoryTaskManager.taskIdGenerator();
     private String taskName;
     private String taskDescription;
     private TaskStatus taskStatus;
@@ -17,7 +17,7 @@ public class Task {
         this.taskStatus = taskStatus;
     }
 
-    public int getTaskId() {
+    public Integer getTaskId() {
         return taskId;
     }
 
@@ -31,6 +31,10 @@ public class Task {
 
     public TaskStatus getTaskStatus() {
         return taskStatus;
+    }
+
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
     }
 
     public void setTaskName(String taskName) {

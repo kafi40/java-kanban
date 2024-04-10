@@ -7,7 +7,10 @@ import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
-import util.TaskStatus;
+import enums.TaskStatus;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,7 +46,7 @@ class InMemoryTaskHistoryTest {
     }
 
     @Test
-    public void shouldNotRepeatTaskInTaskHistory() {
+    public void shouldNotRepeatTaskInTaskHistory() throws IOException {
         Task task1 = task;
         EpicTask epicTask1 = epicTask;
         SubTask subTask1 = subTask;
