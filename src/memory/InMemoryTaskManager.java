@@ -9,9 +9,10 @@ import task.SubTask;
 import task.Task;
 import util.UserInterface;
 import util.Utils;
+
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -112,7 +113,6 @@ public class InMemoryTaskManager implements TaskManager {
             case IN_PROGRESS -> "В процессе";
             case DONE -> "Выполнена";
         };
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:ss");
         System.out.printf("%-10d %-30s %-30s %-15s %-30s %-20s %-20s\n",
                 task.getTaskId(),
                 task.getTaskName(),
@@ -120,9 +120,9 @@ public class InMemoryTaskManager implements TaskManager {
                 taskStatus,
                 epicTask,
                 Optional.ofNullable(task.getStartTime()).map(localDateTime ->
-                        localDateTime.format(dateTimeFormatter)).orElse(""),
+                        localDateTime.format(DTF)).orElse(""),
                 Optional.ofNullable(task.getEndTime()).map(localDateTime ->
-                        localDateTime.format(dateTimeFormatter)).orElse("")
+                        localDateTime.format(DTF)).orElse("")
         );
     }
 
@@ -134,7 +134,7 @@ public class InMemoryTaskManager implements TaskManager {
         String taskDescription;
         TaskStatus taskStatus;
         LocalDateTime startTime;
-        int duration;
+        int durationAsInt;
 
         System.out.print("Введите название: ");
         taskName = scanner.nextLine();
@@ -158,9 +158,9 @@ public class InMemoryTaskManager implements TaskManager {
                 System.out.print("Введите продолжительность задачи в минутах: ");
                 Optional<Integer> optionalDuration = Utils.checkDuration();
                 if (optionalDuration.isPresent()) {
-                    duration = optionalDuration.get();
-                    if (duration == 0) return;
-                    task.setDuration(duration);
+                    durationAsInt = optionalDuration.get();
+                    if (durationAsInt == 0) return;
+                    task.setDuration(Duration.ofMinutes(durationAsInt));
                 }
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
@@ -196,9 +196,9 @@ public class InMemoryTaskManager implements TaskManager {
                 System.out.print("Введите продолжительность задачи в минутах: ");
                 optionalDuration = Utils.checkDuration();
                 if (optionalDuration.isPresent()) {
-                    duration = optionalDuration.get();
-                    if (duration == 0) return;
-                    subTask.setDuration(duration);
+                    durationAsInt = optionalDuration.get();
+                    if (durationAsInt == 0) return;
+                    subTask.setDuration(Duration.ofMinutes(durationAsInt));
                 }
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
@@ -379,8 +379,9 @@ public class InMemoryTaskManager implements TaskManager {
         if (!isSorted) {
             Set<Task> taskList = allTypeTasks.values().stream()
                     .filter(task -> task.getStartTime() != null)
+                    .peek(taskTreeSet::add)
                     .collect(Collectors.toSet());
-            taskTreeSet.addAll(taskList);
+            System.out.println(taskList);
             isSorted = true;
         }
         return taskTreeSet;
@@ -390,25 +391,25 @@ public class InMemoryTaskManager implements TaskManager {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
         task.setStartTime(LocalDateTime.now());
-        task.setDuration(60);
+        task.setDuration(Duration.ofMinutes(60));
         fileBackedTaskManager.save(task, TASK_BACKUP_PATH);
         Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
         task2.setStartTime(LocalDateTime.now().plusMinutes(120));
-        task2.setDuration(30);
+        task2.setDuration(Duration.ofMinutes(30));
         fileBackedTaskManager.save(task2, TASK_BACKUP_PATH);
         EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
         fileBackedTaskManager.save(epicTask, TASK_BACKUP_PATH);
         SubTask subTask = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
         subTask.setStartTime(LocalDateTime.now().plusMinutes(10));
-        subTask.setDuration(40);
+        subTask.setDuration(Duration.ofMinutes(40));
         fileBackedTaskManager.save(subTask, TASK_BACKUP_PATH);
         SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор", TaskStatus.NEW, epicTask);
         subTask2.setStartTime(LocalDateTime.now().plusMinutes(240));
-        subTask2.setDuration(120);
+        subTask2.setDuration(Duration.ofMinutes(120));
         fileBackedTaskManager.save(subTask2, TASK_BACKUP_PATH);
         SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
         subTask3.setStartTime(LocalDateTime.now().plusMinutes(30));
-        subTask3.setDuration(10);
+        subTask3.setDuration(Duration.ofMinutes(10));
         fileBackedTaskManager.save(subTask3, TASK_BACKUP_PATH);
         epicTask.addSubTask(subTask);
         epicTask.addSubTask(subTask2);

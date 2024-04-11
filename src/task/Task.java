@@ -2,7 +2,7 @@ package task;
 
 import enums.TaskStatus;
 import memory.InMemoryTaskManager;
-
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -12,7 +12,7 @@ public class Task implements Comparable<Task> {
     private String taskName;
     private String taskDescription;
     private TaskStatus taskStatus;
-    private int duration;
+    private Duration duration;
     private LocalDateTime startTime;
 
     public Task(String taskName, String taskDescription, TaskStatus taskStatus) {
@@ -36,7 +36,7 @@ public class Task implements Comparable<Task> {
     public TaskStatus getTaskStatus() {
         return taskStatus;
     }
-    public int getDuration() {
+    public Duration getDuration() {
         return duration;
     }
     public LocalDateTime getStartTime() {
@@ -58,7 +58,7 @@ public class Task implements Comparable<Task> {
     public void setTaskStatus(TaskStatus taskStatus) {
         this.taskStatus = taskStatus;
     }
-    public void setDuration(int duration) {
+    public void setDuration(Duration duration) {
         this.duration = duration;
     }
     public void setStartTime(LocalDateTime startTime) {
@@ -66,7 +66,7 @@ public class Task implements Comparable<Task> {
     }
 
     public LocalDateTime getEndTime() {
-        return startTime.plusMinutes(duration);
+        return startTime.plus(duration);
     }
 
     @Override
@@ -101,7 +101,9 @@ public class Task implements Comparable<Task> {
         return "Task{taskID='" + taskId + "',\n"
                 + "taskName='" + taskName + "',\n"
                 + "taskDescription='" + taskDescription + "',\n"
-                + "taskStatus='" + taskStatus + "'}";
+                + "taskStatus='" + taskStatus + "',\n"
+                + "startTime='" + startTime + "',\n"
+                + "duration='" + duration + "'}\n";
     }
 
     @Override
