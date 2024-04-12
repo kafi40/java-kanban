@@ -1,6 +1,7 @@
 package util;
 
 import java.nio.file.Path;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class Parameters {
@@ -11,5 +12,6 @@ public class Parameters {
     public static final Path TASK_BACKUP_PATH = Path.of("src/resource", "backup.txt");
     public static final Path TASK_HISTORY_BACKUP_PATH = Path.of("src/resource", "history.txt");
     public static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    public static final ZoneId ZONE_ID = ZoneId.of("Europe/Moscow");
 
 }

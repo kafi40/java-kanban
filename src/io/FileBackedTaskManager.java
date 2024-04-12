@@ -15,10 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static util.Parameters.DTF;
 import static util.Parameters.TASK_HISTORY_BACKUP_PATH;
@@ -37,7 +34,7 @@ public class FileBackedTaskManager {
         if (!Files.exists(path)) {
             Files.createFile(path);
             try (FileWriter fileWriter = new FileWriter(path.toString())) {
-                fileWriter.write("id,type,name,status,description,epic\n");
+                fileWriter.write("id,type,name,status,description,epic,startTime,duration\n");
             }
         }
 
@@ -113,10 +110,14 @@ public class FileBackedTaskManager {
                     task = new Task(taskName, description, taskStatus);
                     task.setTaskId(taskId);
                     if (optionalStartTime.isPresent()) {
-                        task.setStartTime(LocalDateTime.parse(optionalStartTime.get(), DTF));
+                        if (!optionalStartTime.get().isBlank()) {
+                            task.setStartTime(LocalDateTime.parse(optionalStartTime.get(), DTF));
+                        }
                     }
                     if (optionalDuration.isPresent()) {
-                        task.setDuration(Duration.ofMinutes(Long.parseLong(optionalDuration.get())));
+                        if (!optionalDuration.get().isBlank()) {
+                            task.setDuration(Duration.ofMinutes(Long.parseLong(optionalDuration.get())));
+                        }
                     }
                     taskList.add(task);
                 } else if (taskType == TaskType.EPICTASK) {
@@ -129,10 +130,14 @@ public class FileBackedTaskManager {
                     subTask = new SubTask(taskName, description, taskStatus, mainEpicTask);
                     subTask.setTaskId(taskId);
                     if (optionalStartTime.isPresent()) {
-                        subTask.setStartTime(LocalDateTime.parse(optionalStartTime.get(), DTF));
+                        if (!optionalStartTime.get().isBlank()) {
+                            subTask.setStartTime(LocalDateTime.parse(optionalStartTime.get(), DTF));
+                        }
                     }
                     if (optionalDuration.isPresent()) {
-                        subTask.setDuration(Duration.ofMinutes(Long.parseLong(optionalDuration.get())));
+                        if (!optionalDuration.get().isBlank()) {
+                            subTask.setDuration(Duration.ofMinutes(Long.parseLong(optionalDuration.get())));
+                        }
                     }
                     mainEpicTask.addSubTask(subTask);
                     taskList.add(subTask);

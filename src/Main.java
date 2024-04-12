@@ -32,9 +32,9 @@ public class Main {
                 inMemoryTaskManager.getSubTasks().put(t.getTaskId(), (SubTask) t);
             }
         }
-        for (Task t : taskHistoryList) {
-            taskHistory.addTaskInHistory(t);
-        }
+        inMemoryTaskManager.getPrioritizedTasks();
+        taskHistoryList.forEach(taskHistory::addTaskInHistory);
+
             OUTER: while (true) {
             inMemoryTaskManager.setEpicTaskStatus();
             UserInterface.mainMenuPrint();

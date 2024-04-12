@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class Task implements Comparable<Task> {
+public class Task {
 
     private Integer taskId = InMemoryTaskManager.taskIdGenerator();
     private String taskName;
@@ -66,7 +66,10 @@ public class Task implements Comparable<Task> {
     }
 
     public LocalDateTime getEndTime() {
-        return startTime.plus(duration);
+        if (startTime != null) {
+            return startTime.plus(duration);
+        }
+        return null;
     }
 
     @Override
@@ -104,10 +107,5 @@ public class Task implements Comparable<Task> {
                 + "taskStatus='" + taskStatus + "',\n"
                 + "startTime='" + startTime + "',\n"
                 + "duration='" + duration + "'}\n";
-    }
-
-    @Override
-    public int compareTo(Task o) {
-        return this.startTime.compareTo(o.getStartTime());
     }
 }

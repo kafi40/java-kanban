@@ -2,10 +2,12 @@ package util;
 
 import exceptions.InputDurationException;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Scanner;
+
+import static util.Parameters.DTF;
 
 public class Utils {
 
@@ -65,10 +67,18 @@ public class Utils {
     }
 
     public static LocalDateTime localDateTimeFormatter() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH.mm");
         while (true) {
             Scanner scanner = new Scanner(System.in);
-            LocalDateTime localDateTime = LocalDateTime.parse(scanner.nextLine(), dateTimeFormatter);
+            LocalDateTime localDateTime;
+            try {
+                if (scanner.nextLine().isBlank()) {
+                    return null;
+                }
+                localDateTime = LocalDateTime.parse(scanner.nextLine(), DTF);
+            } catch (DateTimeException e) {
+                System.out.println("Неверный формат даты и времени");
+                continue;
+            }
             return localDateTime;
         }
     }

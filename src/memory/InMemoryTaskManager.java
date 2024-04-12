@@ -23,10 +23,20 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
     private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
-    private final TreeSet<Task> taskTreeSet = new TreeSet<>();
+    private final TreeSet<Task> taskTreeSet;
     private boolean isSorted = false;
     public static int taskIdCounter = 0;
     private final TaskHistory taskHistory = new InMemoryTaskHistory();
+
+    public InMemoryTaskManager() {
+        taskTreeSet = new TreeSet<>((o1, o2) -> {
+            if (o1.getStartTime().equals(o2.getStartTime())) {
+                return -1;
+            } else {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+        });
+    }
 
     public HashMap<Integer, Task> getAllTypeTasks() {
         return allTypeTasks;
@@ -135,6 +145,7 @@ public class InMemoryTaskManager implements TaskManager {
         TaskStatus taskStatus;
         LocalDateTime startTime;
         int durationAsInt;
+        boolean isTimeIntersection = true;
 
         System.out.print("Введите название: ");
         taskName = scanner.nextLine();
@@ -151,16 +162,33 @@ public class InMemoryTaskManager implements TaskManager {
                 if (command == 0) return;
                 taskStatus = setTaskStatus(command);
                 Task task = new Task(taskName, taskDescription, taskStatus);
-                System.out.println("Установите дату и время начала задачи");
-                startTime = Utils.localDateTimeFormatter();
-                task.setStartTime(startTime);
-                System.out.println("Enter - пропустить");
-                System.out.print("Введите продолжительность задачи в минутах: ");
-                Optional<Integer> optionalDuration = Utils.checkDuration();
-                if (optionalDuration.isPresent()) {
-                    durationAsInt = optionalDuration.get();
-                    if (durationAsInt == 0) return;
-                    task.setDuration(Duration.ofMinutes(durationAsInt));
+                OUTER: while (isTimeIntersection) {
+                    System.out.println("Enter - пропустить");
+                    System.out.println("Установите дату и время начала задачи в формате ДД.ММ.ГГГГ ЧЧ:MM");
+                    Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(Utils.localDateTimeFormatter());
+                    if (optionalStartTime.isPresent()) {
+                        task.setStartTime(optionalStartTime.get());
+                    } else {
+                        break;
+                    }
+                    System.out.print("Введите продолжительность задачи в минутах: ");
+                    Optional<Integer> optionalDuration = Utils.checkDuration();
+                    if (optionalDuration.isPresent()) {
+                        durationAsInt = optionalDuration.get();
+                        if (durationAsInt == 0) return;
+                        task.setDuration(Duration.ofMinutes(durationAsInt));
+                    }
+                    for (Task t : taskTreeSet) {
+                        long result = Math.min(task.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
+                                t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
+                                - Math.max(task.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
+                                t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
+                        if (result > 0) {
+                            System.out.println("На это время уже есть задача");
+                            continue OUTER;
+                        }
+                    }
+                    isTimeIntersection = false;
                 }
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
@@ -192,13 +220,33 @@ public class InMemoryTaskManager implements TaskManager {
                 if (command == 0) return;
                 int mainEpicTaskId = epicTasksIdList.get(command - 1);
                 SubTask subTask = new SubTask(taskName, taskDescription, taskStatus, epicTasks.get(mainEpicTaskId));
-                System.out.println("Enter - пропустить");
-                System.out.print("Введите продолжительность задачи в минутах: ");
-                optionalDuration = Utils.checkDuration();
-                if (optionalDuration.isPresent()) {
-                    durationAsInt = optionalDuration.get();
-                    if (durationAsInt == 0) return;
-                    subTask.setDuration(Duration.ofMinutes(durationAsInt));
+                OUTER: while (isTimeIntersection) {
+                    System.out.println("Enter - пропустить");
+                    System.out.println("Установите дату и время начала задачи в формате ДД.ММ.ГГГГ ЧЧ:MM");
+                    Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(Utils.localDateTimeFormatter());
+                    if (optionalStartTime.isPresent()) {
+                        subTask.setStartTime(optionalStartTime.get());
+                    } else {
+                        break;
+                    }
+                    System.out.print("Введите продолжительность задачи в минутах: ");
+                    Optional<Integer> optionalDuration = Utils.checkDuration();
+                    if (optionalDuration.isPresent()) {
+                        durationAsInt = optionalDuration.get();
+                        if (durationAsInt == 0) return;
+                        subTask.setDuration(Duration.ofMinutes(durationAsInt));
+                    }
+                    for (Task t : taskTreeSet) {
+                        long result = Math.min(subTask.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
+                                t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
+                                - Math.max(subTask.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
+                                t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
+                        if (result > 0) {
+                            System.out.println("На это время уже есть задача");
+                            continue OUTER;
+                        }
+                    }
+                    isTimeIntersection = false;
                 }
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
@@ -377,12 +425,11 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public TreeSet<Task> getPrioritizedTasks() {
         if (!isSorted) {
-            Set<Task> taskList = allTypeTasks.values().stream()
+            Set<Task> taskSet = allTypeTasks.values().stream()
                     .filter(task -> task.getStartTime() != null)
-                    .peek(taskTreeSet::add)
                     .collect(Collectors.toSet());
-            System.out.println(taskList);
             isSorted = true;
+            taskTreeSet.addAll(taskSet);
         }
         return taskTreeSet;
     }
@@ -393,30 +440,56 @@ public class InMemoryTaskManager implements TaskManager {
         task.setStartTime(LocalDateTime.now());
         task.setDuration(Duration.ofMinutes(60));
         fileBackedTaskManager.save(task, TASK_BACKUP_PATH);
+
         Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
         task2.setStartTime(LocalDateTime.now().plusMinutes(120));
         task2.setDuration(Duration.ofMinutes(30));
         fileBackedTaskManager.save(task2, TASK_BACKUP_PATH);
+
         EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
         fileBackedTaskManager.save(epicTask, TASK_BACKUP_PATH);
-        SubTask subTask = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
+
+        SubTask subTask = new SubTask("Не отображается", "Неизвестно почему", TaskStatus.NEW, epicTask);
         subTask.setStartTime(LocalDateTime.now().plusMinutes(10));
-        subTask.setDuration(Duration.ofMinutes(40));
+        subTask.setDuration(Duration.ofMinutes(50));
         fileBackedTaskManager.save(subTask, TASK_BACKUP_PATH);
-        SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор", TaskStatus.NEW, epicTask);
+
+        SubTask subTask1 = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
+        subTask1.setStartTime(LocalDateTime.now().plusMinutes(20));
+        subTask1.setDuration(Duration.ofMinutes(40));
+        fileBackedTaskManager.save(subTask1, TASK_BACKUP_PATH);
+
+        SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор",
+                TaskStatus.NEW, epicTask);
         subTask2.setStartTime(LocalDateTime.now().plusMinutes(240));
         subTask2.setDuration(Duration.ofMinutes(120));
         fileBackedTaskManager.save(subTask2, TASK_BACKUP_PATH);
+
         SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
         subTask3.setStartTime(LocalDateTime.now().plusMinutes(30));
         subTask3.setDuration(Duration.ofMinutes(10));
         fileBackedTaskManager.save(subTask3, TASK_BACKUP_PATH);
+
+        SubTask subTask4 = new SubTask("Список блюд", "Больше мяса", TaskStatus.NEW, epicTask);
+        fileBackedTaskManager.save(subTask4, TASK_BACKUP_PATH);
+
         epicTask.addSubTask(subTask);
+        epicTask.addSubTask(subTask1);
         epicTask.addSubTask(subTask2);
         epicTask.addSubTask(subTask3);
+        epicTask.addSubTask(subTask4);
+
         EpicTask epicTask2 = new EpicTask("Стать разработчиком", "До конца года");
         fileBackedTaskManager.save(epicTask2, TASK_BACKUP_PATH);
-        List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask2, subTask3, epicTask2);
+
+        SubTask subTask5 = new SubTask("Изучить Java Core", "Прочесть книгу",
+                TaskStatus.NEW, epicTask2);
+        fileBackedTaskManager.save(subTask5, TASK_BACKUP_PATH);
+
+        epicTask2.addSubTask(subTask5);
+
+        List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask1, subTask2, subTask3, subTask4,
+                epicTask2, subTask5);
 
         for (Task t : listScript) {
             allTypeTasks.put(t.getTaskId(), t);
