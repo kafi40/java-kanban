@@ -1,9 +1,17 @@
 id,type,name,status,description,epic,startTime,duration
-1,TASK,1,NEW,1, ,10.10.2010 10:10,60
-2,TASK,2,NEW,2, ,10.10.2010 10:20,60
-3,TASK,3,NEW,3, ,10.10.2010 11:20,60
-4,TASK,1,NEW,1, , , 
-5,TASK,1,NEW,1, , , 
-6,EPICTASK,2,NEW,2, , , 
-7,SUBTASK,3,NEW,3,6, , 
-8,SUBTASK,4,IN_PROGRESS,4,6,12.12.2024 10:15,10
+1,TASK,Сходить в магазин,NEW,Купить хлеб, ,14.04.2024 11:47,60
+2,TASK,Купить билеты в кино,IN_PROGRESS,Сеанс в субботу, ,14.04.2024 12:47,30
+3,EPICTASK,Организовать день рождения,NEW,Успеть до мая, , , 
+4,SUBTASK,Не отображается,NEW,Неизвестно почему,3,14.04.2024 13:47,50
+5,SUBTASK,Выбрать ресторан,NEW,Кристалл,3,14.04.2024 14:47,40
+6,SUBTASK,Купить украшения,NEW,Шарики декор,3,14.04.2024 15:47,120
+7,SUBTASK,Список гостей,NEW,Не определен,3,14.04.2024 16:47,10
+8,SUBTASK,Список блюд,NEW,Больше мяса,3, , 
+9,EPICTASK,Стать разработчиком,NEW,До конца года, , , 
+10,SUBTASK,Изучить Java Core,NEW,Прочесть книгу,9, , 
+11,TASK,sdfs,IN_PROGRESS,sdfs, , , 
+12,TASK,sda,IN_PROGRESS,sad, ,14.04.2024 19:00,50
+13,TASK,test,IN_PROGRESS,test, ,14.04.2024 23:00,30
+14,TASK,test3,IN_PROGRESS,test3, , , 
+15,TASK,test4,IN_PROGRESS,test4, , , 
+16,TASK,1,NEW,1, ,15.05.2024 10:10,40

@@ -138,14 +138,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addTask(int command) throws IOException {
-
         Scanner scanner = new Scanner(System.in);
         String taskName;
         String taskDescription;
         TaskStatus taskStatus;
-        LocalDateTime startTime;
-        int durationAsInt;
-        boolean isTimeIntersection = true;
 
         System.out.print("Введите название: ");
         taskName = scanner.nextLine();
@@ -162,34 +158,7 @@ public class InMemoryTaskManager implements TaskManager {
                 if (command == 0) return;
                 taskStatus = setTaskStatus(command);
                 Task task = new Task(taskName, taskDescription, taskStatus);
-                OUTER: while (isTimeIntersection) {
-                    System.out.println("Enter - пропустить");
-                    System.out.println("Установите дату и время начала задачи в формате ДД.ММ.ГГГГ ЧЧ:MM");
-                    Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(Utils.localDateTimeFormatter());
-                    if (optionalStartTime.isPresent()) {
-                        task.setStartTime(optionalStartTime.get());
-                    } else {
-                        break;
-                    }
-                    System.out.print("Введите продолжительность задачи в минутах: ");
-                    Optional<Integer> optionalDuration = Utils.checkDuration();
-                    if (optionalDuration.isPresent()) {
-                        durationAsInt = optionalDuration.get();
-                        if (durationAsInt == 0) return;
-                        task.setDuration(Duration.ofMinutes(durationAsInt));
-                    }
-                    for (Task t : taskTreeSet) {
-                        long result = Math.min(task.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
-                                t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
-                                - Math.max(task.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
-                                t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
-                        if (result > 0) {
-                            System.out.println("На это время уже есть задача");
-                            continue OUTER;
-                        }
-                    }
-                    isTimeIntersection = false;
-                }
+                checkAndSetTime(task);
                 tasks.put(task.getTaskId(), task);
                 allTypeTasks.put(task.getTaskId(), task);
                 new FileBackedTaskManager().save(task, TASK_BACKUP_PATH);
@@ -220,34 +189,7 @@ public class InMemoryTaskManager implements TaskManager {
                 if (command == 0) return;
                 int mainEpicTaskId = epicTasksIdList.get(command - 1);
                 SubTask subTask = new SubTask(taskName, taskDescription, taskStatus, epicTasks.get(mainEpicTaskId));
-                OUTER: while (isTimeIntersection) {
-                    System.out.println("Enter - пропустить");
-                    System.out.println("Установите дату и время начала задачи в формате ДД.ММ.ГГГГ ЧЧ:MM");
-                    Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(Utils.localDateTimeFormatter());
-                    if (optionalStartTime.isPresent()) {
-                        subTask.setStartTime(optionalStartTime.get());
-                    } else {
-                        break;
-                    }
-                    System.out.print("Введите продолжительность задачи в минутах: ");
-                    Optional<Integer> optionalDuration = Utils.checkDuration();
-                    if (optionalDuration.isPresent()) {
-                        durationAsInt = optionalDuration.get();
-                        if (durationAsInt == 0) return;
-                        subTask.setDuration(Duration.ofMinutes(durationAsInt));
-                    }
-                    for (Task t : taskTreeSet) {
-                        long result = Math.min(subTask.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
-                                t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
-                                - Math.max(subTask.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli(),
-                                t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
-                        if (result > 0) {
-                            System.out.println("На это время уже есть задача");
-                            continue OUTER;
-                        }
-                    }
-                    isTimeIntersection = false;
-                }
+                checkAndSetTime(subTask);
                 subTasks.put(subTask.getTaskId(), subTask);
                 epicTasks.get(mainEpicTaskId).addSubTask(subTask);
                 allTypeTasks.put(subTask.getTaskId(), subTask);
@@ -265,19 +207,23 @@ public class InMemoryTaskManager implements TaskManager {
                 epicTasks.clear();
                 subTasks.clear();
                 allTypeTasks.clear();
+                isSorted = false;
                 break;
 
             case 2:
                 tasks.clear();
+                isSorted = false;
                 break;
 
             case 3:
                 epicTasks.clear();
                 subTasks.clear();
+                isSorted = false;
                 break;
 
             case 4:
                 subTasks.clear();
+                isSorted = false;
                 break;
 
             case 0:
@@ -323,6 +269,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Такой задачи нет!");
             return;
         }
+        isSorted = false;
         System.out.println("Задача удалена!");
     }
 
@@ -369,7 +316,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void editTaskById(int taskId) {
-
         Scanner scanner = new Scanner(System.in);
         String taskName;
         String taskDescription;
@@ -398,17 +344,20 @@ public class InMemoryTaskManager implements TaskManager {
         if (tasks.get(taskId) != null) {
             task = tasks.get(taskId);
             task.setTaskStatus(taskStatus);
+            checkAndSetTime(task);
         } else if (epicTasks.get(taskId) != null) {
             task = epicTasks.get(taskId);
         } else if (subTasks.get(taskId) != null) {
             task = subTasks.get(taskId);
             task.setTaskStatus(taskStatus);
+            checkAndSetTime(task);
         } else {
             System.out.println("Такой задачи нет!");
             return;
         }
         task.setTaskName(taskName);
         task.setTaskDescription(taskDescription);
+        isSorted = false;
         System.out.println("Задача отредактирована");
     }
 
@@ -434,6 +383,41 @@ public class InMemoryTaskManager implements TaskManager {
         return taskTreeSet;
     }
 
+    public void checkAndSetTime(Task task) {
+        boolean isTimeIntersection = true;
+        Duration duration;
+        LocalDateTime startTime;
+
+        OUTER:
+        while (isTimeIntersection && task.getClass() != EpicTask.class) {
+            System.out.println("Enter - пропустить");
+            System.out.println("Установите дату и время начала задачи в формате ДД.ММ.ГГГГ ЧЧ:MM");
+            Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(Utils.localDateTimeFormatter());
+            if (optionalStartTime.isEmpty()) {
+                return;
+            }
+            System.out.print("Введите продолжительность задачи в минутах: ");
+            Optional<Integer> optionalDuration = Utils.checkDuration();
+            if (optionalDuration.isPresent()) {
+                startTime = optionalStartTime.get();
+                duration = Duration.ofMinutes(optionalDuration.get());
+                for (Task t : taskTreeSet) {
+                    long result = Math.min(startTime.plus(duration).atZone(ZONE_ID).toInstant().toEpochMilli(),
+                            t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
+                            - Math.max(startTime.atZone(ZONE_ID).toInstant().toEpochMilli(),
+                            t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
+                    if (result > 0) {
+                        System.out.println("На это время уже есть задача");
+                        continue OUTER;
+                    }
+                }
+                task.setStartTime(startTime);
+                task.setDuration(duration);
+            }
+            isTimeIntersection = false;
+        }
+    }
+
     public void createTasksScript() throws IOException {
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
         Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
@@ -442,7 +426,7 @@ public class InMemoryTaskManager implements TaskManager {
         fileBackedTaskManager.save(task, TASK_BACKUP_PATH);
 
         Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
-        task2.setStartTime(LocalDateTime.now().plusMinutes(120));
+        task2.setStartTime(LocalDateTime.now().plusMinutes(60));
         task2.setDuration(Duration.ofMinutes(30));
         fileBackedTaskManager.save(task2, TASK_BACKUP_PATH);
 
@@ -450,12 +434,12 @@ public class InMemoryTaskManager implements TaskManager {
         fileBackedTaskManager.save(epicTask, TASK_BACKUP_PATH);
 
         SubTask subTask = new SubTask("Не отображается", "Неизвестно почему", TaskStatus.NEW, epicTask);
-        subTask.setStartTime(LocalDateTime.now().plusMinutes(10));
+        subTask.setStartTime(LocalDateTime.now().plusMinutes(120));
         subTask.setDuration(Duration.ofMinutes(50));
         fileBackedTaskManager.save(subTask, TASK_BACKUP_PATH);
 
         SubTask subTask1 = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
-        subTask1.setStartTime(LocalDateTime.now().plusMinutes(20));
+        subTask1.setStartTime(LocalDateTime.now().plusMinutes(180));
         subTask1.setDuration(Duration.ofMinutes(40));
         fileBackedTaskManager.save(subTask1, TASK_BACKUP_PATH);
 
@@ -466,7 +450,7 @@ public class InMemoryTaskManager implements TaskManager {
         fileBackedTaskManager.save(subTask2, TASK_BACKUP_PATH);
 
         SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
-        subTask3.setStartTime(LocalDateTime.now().plusMinutes(30));
+        subTask3.setStartTime(LocalDateTime.now().plusMinutes(300));
         subTask3.setDuration(Duration.ofMinutes(10));
         fileBackedTaskManager.save(subTask3, TASK_BACKUP_PATH);
 
@@ -491,7 +475,7 @@ public class InMemoryTaskManager implements TaskManager {
         List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask1, subTask2, subTask3, subTask4,
                 epicTask2, subTask5);
 
-        for (Task t : listScript) {
+        listScript.forEach(t -> {
             allTypeTasks.put(t.getTaskId(), t);
             if (t.getClass() == Task.class) {
                 tasks.put(t.getTaskId(), t);
@@ -502,7 +486,7 @@ public class InMemoryTaskManager implements TaskManager {
             if (t.getClass() == SubTask.class) {
                 subTasks.put(t.getTaskId(), (SubTask) t);
             }
-        }
+        });
         System.out.println("Задачи созданы");
     }
 }

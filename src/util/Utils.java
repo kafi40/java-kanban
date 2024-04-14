@@ -33,11 +33,11 @@ public class Utils {
             Scanner scanner = new Scanner(System.in);
             int inputId;
             if (!scanner.hasNextInt()) {
-                System.out.print("Такого ID нет! Попробуйте снова: ");
+                System.out.print("Некорректный ID! Попробуйте снова: ");
             } else {
                 inputId = scanner.nextInt();
                 if (inputId < 0) {
-                    System.out.print("Такого ID нет! Попробуйте снова: ");
+                    System.out.print("Некорректный ID! Попробуйте снова: ");
                 } else {
                     return inputId;
                 }
@@ -70,11 +70,12 @@ public class Utils {
         while (true) {
             Scanner scanner = new Scanner(System.in);
             LocalDateTime localDateTime;
+            String input = scanner.nextLine();
             try {
-                if (scanner.nextLine().isBlank()) {
+                if (input.isBlank()) {
                     return null;
                 }
-                localDateTime = LocalDateTime.parse(scanner.nextLine(), DTF);
+                localDateTime = LocalDateTime.parse(input, DTF);
             } catch (DateTimeException e) {
                 System.out.println("Неверный формат даты и времени");
                 continue;

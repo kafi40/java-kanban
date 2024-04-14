@@ -14,6 +14,7 @@ public class InMemoryTaskManagerTest {
     static public Task task;
     static public EpicTask epicTask;
     static public SubTask subTask;
+    static public SubTask subTask2;
 
     @BeforeAll
     public static void beforeAll() {
@@ -21,6 +22,10 @@ public class InMemoryTaskManagerTest {
         task = new Task("Name", "Description", TaskStatus.NEW);
         epicTask = new EpicTask("Name", "Description");
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
+        subTask2 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
+        taskManager.getEpicTasks().put(epicTask.getTaskId(), epicTask);
+        taskManager.getSubTasks().put(subTask.getTaskId(), subTask);
+        taskManager.getSubTasks().put(subTask2.getTaskId(), subTask2);
     }
 
     @Test
@@ -47,5 +52,24 @@ public class InMemoryTaskManagerTest {
         assertNotNull(taskManager.getTasks().get(taskId), "Обычная задача не добавилась список обычных задач");
         assertNotNull(taskManager.getEpicTasks().get(epicTaskId), "Эпик задача не добавилась список эпик задач");
         assertNotNull(taskManager.getSubTasks().get(subTaskId), "Подзадача не добавилась список подзадач");
+    }
+    @Test
+    public void shouldChanceEpicTaskStatus() {
+        assertEquals(epicTask.getTaskStatus(), TaskStatus.NEW, "Ожидался статус NEW");
+
+        subTask.setTaskStatus(TaskStatus.IN_PROGRESS);
+        subTask2.setTaskStatus(TaskStatus.IN_PROGRESS);
+        taskManager.setEpicTaskStatus();
+        assertEquals(epicTask.getTaskStatus(), TaskStatus.IN_PROGRESS, "Ожидался статус IN_PROGRESS");
+
+        subTask.setTaskStatus(TaskStatus.DONE);
+        subTask2.setTaskStatus(TaskStatus.DONE);
+        taskManager.setEpicTaskStatus();
+        assertEquals(epicTask.getTaskStatus(), TaskStatus.DONE, "Ожидался статус DONE");
+
+        subTask.setTaskStatus(TaskStatus.NEW);
+        subTask2.setTaskStatus(TaskStatus.DONE);
+        taskManager.setEpicTaskStatus();
+        assertEquals(epicTask.getTaskStatus(), TaskStatus.IN_PROGRESS, "Ожидался статус IN_PROGRESS");
     }
 }
