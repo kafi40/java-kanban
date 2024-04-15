@@ -1,5 +1,6 @@
 package interfaces;
 
+import task.EpicTask;
 import task.Task;
 import enums.TaskStatus;
 
@@ -10,7 +11,7 @@ public interface TaskManager {
 
     TaskStatus setTaskStatus(int command);
 
-    void setEpicTaskStatus();
+    void setEpicTaskStatus(EpicTask epicTask);
 
     void showTask(Task task);
 

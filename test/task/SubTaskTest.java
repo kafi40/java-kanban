@@ -23,4 +23,10 @@ public class SubTaskTest {
         subTask2 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
         assertNotEquals(subTask.equals(subTask2), "Задачи равны");
     }
+    @Test
+    public void shouldHasEpicTask() {
+        epicTask = new EpicTask("Name", "Description");
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
+        assertEquals(subTask.getEpicTask(), epicTask, "Не является эпиком для подзадачи");
+    }
 }

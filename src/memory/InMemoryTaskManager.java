@@ -73,16 +73,14 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void setEpicTaskStatus() {
+    public void setEpicTaskStatus(EpicTask epicTask) {
         boolean isNewTaskFlag = false;
         boolean isDoneTaskFlag = false;
 
-        for (EpicTask et : epicTasks.values()) {
-            if (et.getSubTasks().isEmpty()) {
-                et.setTaskStatus(TaskStatus.NEW);
-                continue;
-            }
-            for (SubTask st : et.getSubTasks()) {
+        if (epicTask.getSubTasks().isEmpty()) {
+            epicTask.setTaskStatus(TaskStatus.NEW);
+        } else {
+            for (SubTask st : epicTask.getSubTasks()) {
                 if (st.getTaskStatus().equals(TaskStatus.NEW)) {
                     isNewTaskFlag = true;
                 } else {
@@ -90,7 +88,7 @@ public class InMemoryTaskManager implements TaskManager {
                     break;
                 }
             }
-            for (SubTask st : et.getSubTasks()) {
+            for (SubTask st : epicTask.getSubTasks()) {
                 if (st.getTaskStatus().equals(TaskStatus.DONE)) {
                     isDoneTaskFlag = true;
                 } else {
@@ -99,15 +97,14 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
             if (isNewTaskFlag) {
-                et.setTaskStatus(TaskStatus.NEW);
+                epicTask.setTaskStatus(TaskStatus.NEW);
             } else if (isDoneTaskFlag) {
-                et.setTaskStatus(TaskStatus.DONE);
+                epicTask.setTaskStatus(TaskStatus.DONE);
             } else {
-                et.setTaskStatus(TaskStatus.IN_PROGRESS);
+                epicTask.setTaskStatus(TaskStatus.IN_PROGRESS);
             }
         }
     }
-
     @Override
     public void showTask(Task task) {
         String taskStatus;

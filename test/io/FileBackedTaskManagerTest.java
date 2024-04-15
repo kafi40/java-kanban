@@ -9,12 +9,13 @@ import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FileBackedTaskManagerTest {
     public static InMemoryTaskManager taskManager;
@@ -41,7 +42,6 @@ public class FileBackedTaskManagerTest {
         tasksList = taskHistory.getHistory();
         try {
             File tempFile = File.createTempFile("history", ".txt", new File("src/resource"));
-
             try (FileWriter fileWriter = new FileWriter(tempFile)) {
                 fileWriter.write("id,type,name,status,description,epic\n");
             }
@@ -66,7 +66,6 @@ public class FileBackedTaskManagerTest {
         taskList.add(subTask);
         try {
             File tempFile = File.createTempFile("backup", ".txt", new File("src/resource"));
-
             try (FileWriter fileWriter = new FileWriter(tempFile)) {
                 fileWriter.write("id,type,name,status,description,epic\n");
             }
@@ -81,5 +80,29 @@ public class FileBackedTaskManagerTest {
         } catch (Exception e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
+    }
+
+    @Test
+    public void testCreateFileException() {
+        assertThrows(IOException.class, () -> {
+            File tempFile = File.createTempFile("backup", "", new File("sr/resource"));
+            tempFile.deleteOnExit();
+        }, "Не корректное создание файла должно привести к исключению");
+    }
+
+    @Test
+    public void testCreateFileWriter() {
+        assertThrows(IOException.class, () -> {
+            FileWriter fileWriter = new FileWriter("");
+            fileWriter.write("Какой-то текст");
+        }, "Не корректно созданный экземпляр FileWriter должен привести к исключению");
+    }
+
+    @Test
+    public void testCreateBufferReader() {
+        assertThrows(IOException.class, () -> {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(""));
+            bufferedReader.readLine();
+        }, "Не корректно созданный экземпляр BufferedReader должен привести к исключению");
     }
 }

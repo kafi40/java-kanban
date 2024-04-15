@@ -36,7 +36,7 @@ public class Main {
         taskHistoryList.forEach(taskHistory::addTaskInHistory);
 
             OUTER: while (true) {
-            inMemoryTaskManager.setEpicTaskStatus();
+            inMemoryTaskManager.getEpicTasks().values().forEach(inMemoryTaskManager::setEpicTaskStatus);
             UserInterface.mainMenuPrint();
             int command = Utils.checkCommand(MAIN_MENU_COMMAND_COUNT);
             switch (command) {
