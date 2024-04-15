@@ -4,12 +4,12 @@ public class InputDurationException extends NumberFormatException {
 
     private final Object inputValue;
 
-    public InputDurationException (String message, final String inputValue) {
+    public InputDurationException(String message, final String inputValue) {
         super(message);
         this.inputValue = inputValue;
     }
 
-    public InputDurationException (String message, final int inputValue) {
+    public InputDurationException(String message, final int inputValue) {
         super(message);
         this.inputValue = inputValue;
     }

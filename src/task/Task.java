@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
-
     private Integer taskId = InMemoryTaskManager.taskIdGenerator();
     private String taskName;
     private String taskDescription;
@@ -36,9 +35,11 @@ public class Task {
     public TaskStatus getTaskStatus() {
         return taskStatus;
     }
+
     public Duration getDuration() {
         return duration;
     }
+
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -58,9 +59,11 @@ public class Task {
     public void setTaskStatus(TaskStatus taskStatus) {
         this.taskStatus = taskStatus;
     }
+
     public void setDuration(Duration duration) {
         this.duration = duration;
     }
+
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
