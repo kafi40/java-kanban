@@ -404,10 +404,9 @@ public class InMemoryTaskManager implements TaskManager {
                 duration = Duration.ofMinutes(optionalDuration.get());
                 endTime = startTime.plus(duration);
                 for (Task t : taskTreeSet) {
-//                    long result = Math.min(startTime.plus(duration).atZone(ZONE_ID).toInstant().toEpochMilli(),
-//                            t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
-//                            - Math.max(startTime.atZone(ZONE_ID).toInstant().toEpochMilli(),
-//                            t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
+                    if (task.getTaskId().equals(t.getTaskId())) {
+                        continue;
+                    }
                     if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
                             || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
                         System.out.println("На это время уже есть задача");
