@@ -372,11 +372,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public TreeSet<Task> getPrioritizedTasks() {
         if (!isSorted) {
+            taskTreeSet.clear();
             Set<Task> taskSet = allTypeTasks.values().stream()
+                    .filter(task -> task.getClass() != EpicTask.class)
                     .filter(task -> task.getStartTime() != null)
                     .collect(Collectors.toSet());
-            isSorted = true;
             taskTreeSet.addAll(taskSet);
+            isSorted = true;
         }
         return taskTreeSet;
     }
@@ -385,6 +387,7 @@ public class InMemoryTaskManager implements TaskManager {
         boolean isTimeIntersection = true;
         Duration duration;
         LocalDateTime startTime;
+        LocalDateTime endTime;
 
         OUTER:
         while (isTimeIntersection && task.getClass() != EpicTask.class) {
@@ -399,12 +402,14 @@ public class InMemoryTaskManager implements TaskManager {
             if (optionalDuration.isPresent()) {
                 startTime = optionalStartTime.get();
                 duration = Duration.ofMinutes(optionalDuration.get());
+                endTime = startTime.plus(duration);
                 for (Task t : taskTreeSet) {
-                    long result = Math.min(startTime.plus(duration).atZone(ZONE_ID).toInstant().toEpochMilli(),
-                            t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
-                            - Math.max(startTime.atZone(ZONE_ID).toInstant().toEpochMilli(),
-                            t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
-                    if (result > 0) {
+//                    long result = Math.min(startTime.plus(duration).atZone(ZONE_ID).toInstant().toEpochMilli(),
+//                            t.getEndTime().atZone(ZONE_ID).toInstant().toEpochMilli())
+//                            - Math.max(startTime.atZone(ZONE_ID).toInstant().toEpochMilli(),
+//                            t.getStartTime().atZone(ZONE_ID).toInstant().toEpochMilli());
+                    if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+                            || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
                         System.out.println("На это время уже есть задача");
                         continue OUTER;
                     }
