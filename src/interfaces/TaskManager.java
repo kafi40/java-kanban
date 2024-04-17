@@ -1,15 +1,17 @@
 package interfaces;
 
+import task.EpicTask;
 import task.Task;
 import enums.TaskStatus;
 
 import java.io.IOException;
+import java.util.TreeSet;
 
 public interface TaskManager {
 
     TaskStatus setTaskStatus(int command);
 
-    void setEpicTaskStatus();
+    void setEpicTaskStatus(EpicTask epicTask);
 
     void showTask(Task task);
 
@@ -26,4 +28,6 @@ public interface TaskManager {
     void editTaskById(int taskId);
 
     void getHistory();
+
+    TreeSet<Task> getPrioritizedTasks();
 }

@@ -1,18 +1,17 @@
 package memory;
 
+import enums.TaskStatus;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
 import util.Managers;
-import enums.TaskStatus;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryTaskHistoryTest {
 
@@ -46,7 +45,7 @@ class InMemoryTaskHistoryTest {
     }
 
     @Test
-    public void shouldNotRepeatTaskInTaskHistory() throws IOException {
+    public void shouldNotRepeatTaskInTaskHistory() {
         Task task1 = task;
         EpicTask epicTask1 = epicTask;
         SubTask subTask1 = subTask;
@@ -57,6 +56,5 @@ class InMemoryTaskHistoryTest {
         taskHistory.addTaskInHistory(subTask1);
         tasksList = taskHistory.getHistory();
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
-
     }
 }

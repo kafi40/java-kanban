@@ -20,7 +20,7 @@ public class Main {
         List<Task> taskList = fileBackedTaskManager.getData(TASK_BACKUP_PATH);
         List<Task> taskHistoryList = fileBackedTaskManager.getData(TASK_HISTORY_BACKUP_PATH);
 
-        for (Task t : taskList) {
+        taskList.forEach(t -> {
             inMemoryTaskManager.getAllTypeTasks().put(t.getTaskId(), t);
             if (t.getClass() == Task.class) {
                 inMemoryTaskManager.getTasks().put(t.getTaskId(), t);
@@ -31,12 +31,12 @@ public class Main {
             if (t.getClass() == SubTask.class) {
                 inMemoryTaskManager.getSubTasks().put(t.getTaskId(), (SubTask) t);
             }
-        }
-        for (Task t : taskHistoryList) {
-            taskHistory.addTaskInHistory(t);
-        }
+        });
+        inMemoryTaskManager.getPrioritizedTasks();
+        taskHistoryList.forEach(taskHistory::addTaskInHistory);
+
             OUTER: while (true) {
-            inMemoryTaskManager.setEpicTaskStatus();
+            inMemoryTaskManager.getEpicTasks().values().forEach(inMemoryTaskManager::setEpicTaskStatus);
             UserInterface.mainMenuPrint();
             int command = Utils.checkCommand(MAIN_MENU_COMMAND_COUNT);
             switch (command) {
@@ -93,13 +93,20 @@ public class Main {
                     break;
 
                 case 5:
-                    System.out.println("Редактировать задачу по ID");
-                    System.out.println("0 - Выйти");
-                    System.out.print("Введите ID: ");
-                    taskId = Utils.checkId();
-                    if (taskId == 0)
-                        continue;
-                    inMemoryTaskManager.editTaskById(taskId);
+                        System.out.println("Редактировать задачу по ID");
+                        System.out.println("0 - Выйти");
+                        System.out.print("Введите ID: ");
+                    while (true) {
+                        taskId = Utils.checkId();
+                        if (taskId == 0)
+                            continue OUTER;
+                        if (inMemoryTaskManager.getAllTypeTasks().containsKey(taskId)) {
+                            inMemoryTaskManager.editTaskById(taskId);
+                            break;
+                        } else {
+                            System.out.print("Такой задачи нет! Попробуйте снова: ");
+                        }
+                    }
                     break;
 
                 case 6:

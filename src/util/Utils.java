@@ -1,6 +1,13 @@
 package util;
 
+import exceptions.InputDurationException;
+
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Scanner;
+
+import static util.Parameters.DTF;
 
 public class Utils {
 
@@ -26,11 +33,11 @@ public class Utils {
             Scanner scanner = new Scanner(System.in);
             int inputId;
             if (!scanner.hasNextInt()) {
-                System.out.print("Такого ID нет! Попробуйте снова: ");
+                System.out.print("Некорректный ID! Попробуйте снова: ");
             } else {
                 inputId = scanner.nextInt();
                 if (inputId < 0) {
-                    System.out.print("Такого ID нет! Попробуйте снова: ");
+                    System.out.print("Некорректный ID! Попробуйте снова: ");
                 } else {
                     return inputId;
                 }
@@ -38,10 +45,42 @@ public class Utils {
         }
     }
 
-    public static String tableFormatter(String s) {
-        for (int i = s.length(); i < 30; i++) {
-            s = s + " ";
+    public static Optional<Integer> checkDuration() {
+        while (true) {
+            try {
+                Scanner scanner = new Scanner(System.in);
+                Optional<Integer> inputDuration;
+                if (!scanner.hasNextInt()) {
+                    throw new InputDurationException("Вы ввели строку или дробь: ", scanner.next());
+                } else {
+                    inputDuration = Optional.of(scanner.nextInt());
+                    if (inputDuration.get() < 0) {
+                        throw new InputDurationException("Вы ввели отрицательное число: ", inputDuration.get());
+                    } else {
+                        return inputDuration;
+                    }
+                }
+            } catch (InputDurationException e) {
+                System.out.println(e.getMessage());
+            }
         }
-        return s;
+    }
+
+    public static LocalDateTime localDateTimeFormatter() {
+        while (true) {
+            Scanner scanner = new Scanner(System.in);
+            LocalDateTime localDateTime;
+            String input = scanner.nextLine();
+            try {
+                if (input.isBlank()) {
+                    return null;
+                }
+                localDateTime = LocalDateTime.parse(input, DTF);
+            } catch (DateTimeException e) {
+                System.out.println("Неверный формат даты и времени");
+                continue;
+            }
+            return localDateTime;
+        }
     }
 }
