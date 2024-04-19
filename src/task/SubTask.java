@@ -9,6 +9,7 @@ public class SubTask extends Task {
     public SubTask(String taskName, String taskDescription, TaskStatus taskStatus, EpicTask epicTask) {
         super(taskName, taskDescription, taskStatus);
         this.epicTask = epicTask;
+        epicTask.addSubTask(this);
     }
 
     public EpicTask getEpicTask() {

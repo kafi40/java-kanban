@@ -1,12 +1,12 @@
 package memory;
 
-import interfaces.TaskHistory;
+import interfaces.HistoryManager;
 import task.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class InMemoryTaskHistory<T extends Task> implements TaskHistory<T> {
+public class InMemoryHistoryManager<T extends Task> implements HistoryManager<T> {
     private Node head;
     private Node tail;
     private final HashMap<Integer, Node> tasksLink = new HashMap<>();
@@ -43,7 +43,7 @@ public class InMemoryTaskHistory<T extends Task> implements TaskHistory<T> {
     }
 
     @Override
-    public void addTaskInHistory(T element) {
+    public void add(T element) {
         Integer id = element.getTaskId();
         Node node = tasksLink.get(id);
 
@@ -66,7 +66,7 @@ public class InMemoryTaskHistory<T extends Task> implements TaskHistory<T> {
     }
 
     @Override
-    public void removeTaskFromHistory(int id) {
+    public void remove(int id) {
         Node node = tasksLink.get(id);
         if (node != null) {
             tasksLink.remove(node);
@@ -75,7 +75,7 @@ public class InMemoryTaskHistory<T extends Task> implements TaskHistory<T> {
     }
 
     public class Node {
-        private T data;
+        private final T data;
         private Node next;
         private Node prev;
 
