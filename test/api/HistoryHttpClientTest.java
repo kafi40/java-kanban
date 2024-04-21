@@ -38,6 +38,7 @@ public class HistoryHttpClientTest {
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
         httpServer.createContext("/history", new HistoryHandler());
+        httpServer.createContext("/tasks", new HistoryHandler());
         httpServer.start();
         task = new Task("Name", "Description", TaskStatus.NEW);
         task.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
@@ -47,8 +48,7 @@ public class HistoryHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetHistory() throws IOException, InterruptedException {
-        taskManager.getTask(1);
-        URI uri = URI.create("http://localhost:8080/history");
+        URI uri = URI.create("http://localhost:8080/tasks/1");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -56,11 +56,21 @@ public class HistoryHttpClientTest {
 
         HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
         HttpResponse<String> response = httpClient.send(httpRequest, handler);
+        System.out.println(response.statusCode());
+
+        uri = URI.create("http://localhost:8080/history");
+        httpRequest = HttpRequest.newBuilder()
+                .GET()
+                .uri(uri)
+                .build();
+
+        handler = HttpResponse.BodyHandlers.ofString();
+        response = httpClient.send(httpRequest, handler);
         assertEquals(200, response.statusCode(), "Ожидался код 200");
     }
     @AfterAll
     public static void afterAll() {
-//        tempFIle.deleteOnExit();
+        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }

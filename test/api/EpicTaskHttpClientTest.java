@@ -1,13 +1,16 @@
 package api;
 
 import com.sun.net.httpserver.HttpServer;
+import enums.TaskStatus;
 import handlers.EpicTaskHandler;
 import interfaces.TaskManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.EpicTask;
+import task.SubTask;
 import util.Managers;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,9 +18,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static util.Parameters.DTF;
 
 public class EpicTaskHttpClientTest {
     public static HttpClient httpClient;
@@ -25,6 +30,7 @@ public class EpicTaskHttpClientTest {
     public static HttpServer httpServer;
     public static EpicTask epicTask;
     public static EpicTask epicTask1;
+    public static SubTask subTask;
     public static File tempFIle;
     @BeforeAll
     public static void beforeAll() throws IOException {
@@ -40,6 +46,10 @@ public class EpicTaskHttpClientTest {
         epicTask1 = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         taskManager.addEpicTask(epicTask1);
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
     }
 
     @Test
