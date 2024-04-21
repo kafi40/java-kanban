@@ -26,14 +26,12 @@ import static util.Parameters.DTF;
 
 public class SubTaskHttpClientTest {
     public static HttpClient httpClient;
-    public static TaskManager taskManager;
     public static HttpServer httpServer;
     public static File tempFIle;
     @BeforeAll
     public static void beforeAll() throws IOException {
         tempFIle = File.createTempFile("backupTest", "txt", new File("src/resource"));
         Managers.setFileBackedTaskManager(tempFIle);
-        taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
@@ -43,6 +41,7 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTasks() throws IOException, InterruptedException {
+        TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
@@ -63,6 +62,7 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTaskId() throws IOException, InterruptedException {
+        TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
@@ -95,6 +95,7 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteSubTaskId() throws IOException, InterruptedException {
+        TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
