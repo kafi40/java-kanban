@@ -31,7 +31,6 @@ public class SubTaskHttpClientTest {
     public static HttpServer httpServer;
     public static EpicTask epicTask;
     public static SubTask subTask;
-    public static SubTask subTask1;
     public static File tempFIle;
     @BeforeAll
     public static void beforeAll() throws IOException {
@@ -43,20 +42,17 @@ public class SubTaskHttpClientTest {
         httpServer.bind(new InetSocketAddress(8080), 0);
         httpServer.createContext("/subtasks", new SubTaskHandler());
         httpServer.start();
+    }
+
+    @Test
+    public void shouldGetStatus200ForGetSubTasks() throws IOException, InterruptedException {
         epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
-        subTask1 = new SubTask("Name", "Description", TaskStatus.NEW, 1);
-        subTask1.setStartTime(LocalDateTime.parse("15.04.2024 13:00", DTF));
-        subTask1.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
-        taskManager.addSubTask(subTask1);
-    }
 
-    @Test
-    public void shouldGetStatus200ForGetSubTasks() throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -70,7 +66,13 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/subtasks/2");
+        epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
+        URI uri = URI.create("http://localhost:8080/subtasks/" + subTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -96,7 +98,13 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteSubTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/subtasks/3");
+        epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
+        URI uri = URI.create("http://localhost:8080/subtasks/" + subTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
                 .uri(uri)
@@ -144,7 +152,7 @@ public class SubTaskHttpClientTest {
     @Test
     public void shouldGetStatus201ForUpdateSubTask() throws IOException, InterruptedException {
         String result = """
-                {"taskId":4, "taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000","taskStatus":"NEW","epicTaskId":1,"duration":60,"startTime":"05.06.2024 10:00"}""";
+                {"taskId":2, "taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000","taskStatus":"NEW","epicTaskId":1,"duration":60,"startTime":"05.06.2024 19:00"}""";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -159,6 +167,6 @@ public class SubTaskHttpClientTest {
     }
     @AfterAll
     public static void afterAll() {
-        tempFIle.deleteOnExit();
+//        tempFIle.deleteOnExit();
         httpServer.stop(0);    }
 }
