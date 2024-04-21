@@ -45,9 +45,9 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTasks() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
@@ -65,9 +65,9 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTaskId() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
@@ -83,7 +83,7 @@ public class SubTaskHttpClientTest {
     }
 
     @Test
-    public void shouldNotGetStatus200ForGetSubTaskId() throws IOException, InterruptedException {
+    public void shouldGetStatus404ForGetSubTaskId() throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/subtasks/1000");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -97,9 +97,9 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteSubTaskId() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
