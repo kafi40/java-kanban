@@ -9,8 +9,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.Task;
 import util.Managers;
-
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -28,11 +26,8 @@ public class HistoryHttpClientTest {
     public static TaskManager taskManager;
     public static HttpServer httpServer;
     public static Task task;
-    public static File tempFIle;
     @BeforeAll
     public static void beforeAll() throws IOException {
-        tempFIle = File.createTempFile("backupTest", "txt", new File("src/resource"));
-        Managers.setFileBackedTaskManager(tempFIle);
         taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
@@ -70,7 +65,6 @@ public class HistoryHttpClientTest {
     }
     @AfterAll
     public static void afterAll() {
-        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }

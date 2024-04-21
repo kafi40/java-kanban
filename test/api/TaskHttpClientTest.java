@@ -24,11 +24,8 @@ public class TaskHttpClientTest {
     public static TaskManager taskManager;
     public static HttpServer httpServer;
     public static Task task;
-    public static File tempFIle;
     @BeforeEach
     public void beforeEach() throws IOException {
-        tempFIle = File.createTempFile("backupTest", "txt", new File("src/resource"));
-        Managers.setFileBackedTaskManager(tempFIle);
         taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
@@ -145,7 +142,6 @@ public class TaskHttpClientTest {
     }
     @AfterEach
     public void afterEach() {
-        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }

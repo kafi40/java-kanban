@@ -14,7 +14,6 @@ public class HttpTaskServer {
     }
 
     public static void main(String[] args) throws IOException {
-        Managers.setFileBackedTaskManager(FILE);
         HttpTaskServer httpTaskServer = new HttpTaskServer();
         httpTaskServer.start();
     }

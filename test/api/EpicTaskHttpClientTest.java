@@ -8,8 +8,6 @@ import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
 import util.Managers;
-
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -25,15 +23,10 @@ import static util.Parameters.DTF;
 public class EpicTaskHttpClientTest {
     public  HttpClient httpClient;
     public  HttpServer httpServer;
-    public static File tempFIle;
-    public TaskManager taskManager;
+    public TaskManager taskManager = Managers.getManagerBacked();
     public EpicTask epicTask;
     public SubTask subTask;
-    @BeforeAll
-    public static void beforeAll() throws IOException {
-        tempFIle = File.createTempFile("backupTest", "txt", new File("src/resource"));
-        Managers.setFileBackedTaskManager(tempFIle);
-    }
+
     @BeforeEach
     public void beforeEach() throws IOException {
         httpClient = HttpClient.newHttpClient();
@@ -181,7 +174,6 @@ public class EpicTaskHttpClientTest {
     }
     @AfterEach
     public void afterEach() {
-        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }

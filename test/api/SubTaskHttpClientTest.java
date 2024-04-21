@@ -8,8 +8,6 @@ import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
 import util.Managers;
-
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -25,21 +23,17 @@ import static util.Parameters.DTF;
 public class SubTaskHttpClientTest {
     public static HttpClient httpClient;
     public static HttpServer httpServer;
-    public static File tempFIle;
+    public static TaskManager taskManager = Managers.getManagerBacked();
     @BeforeEach
     public void beforeEach() throws IOException {
-        tempFIle = File.createTempFile("backupTest", "txt", new File("src/resource"));
-        Managers.setFileBackedTaskManager(tempFIle);
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
         httpServer.createContext("/subtasks", new SubTaskHandler());
         httpServer.start();
     }
-
     @Test
     public void shouldGetStatus200ForGetSubTasks() throws IOException, InterruptedException {
-        TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
@@ -60,7 +54,6 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTaskId() throws IOException, InterruptedException {
-        TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
@@ -93,7 +86,6 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteSubTaskId() throws IOException, InterruptedException {
-        TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
@@ -163,6 +155,6 @@ public class SubTaskHttpClientTest {
     }
     @AfterEach
     public void afterEach() {
-        tempFIle.deleteOnExit();
-        httpServer.stop(0);    }
+        httpServer.stop(0);
+    }
 }
