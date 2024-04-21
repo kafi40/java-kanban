@@ -44,6 +44,10 @@ public class EpicTaskHttpClientTest {
         TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -60,6 +64,10 @@ public class EpicTaskHttpClientTest {
         TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -122,6 +130,10 @@ public class EpicTaskHttpClientTest {
         TaskManager taskManager = Managers.getManagerBacked();
         EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
