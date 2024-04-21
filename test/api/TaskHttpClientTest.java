@@ -148,5 +148,6 @@ public class TaskHttpClientTest {
     @AfterAll
     public static void afterAll() {
         tempFIle.deleteOnExit();
+        httpServer.stop(0);
     }
 }

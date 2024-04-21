@@ -61,5 +61,6 @@ public class HistoryHttpClientTest {
     @AfterAll
     public static void afterAll() {
         tempFIle.deleteOnExit();
+        httpServer.stop(0);
     }
 }

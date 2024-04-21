@@ -167,5 +167,6 @@ public class EpicTaskHttpClientTest {
     @AfterAll
     public static void afterAll() {
         tempFIle.deleteOnExit();
+        httpServer.stop(0);
     }
 }
