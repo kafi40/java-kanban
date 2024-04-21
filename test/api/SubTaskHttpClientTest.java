@@ -4,9 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
 import handlers.SubTaskHandler;
 import interfaces.TaskManager;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
 import util.Managers;
@@ -28,8 +26,8 @@ public class SubTaskHttpClientTest {
     public static HttpClient httpClient;
     public static HttpServer httpServer;
     public static File tempFIle;
-    @BeforeAll
-    public static void beforeAll() throws IOException {
+    @BeforeEach
+    public void beforeEach() throws IOException {
         tempFIle = File.createTempFile("backupTest", "txt", new File("src/resource"));
         Managers.setFileBackedTaskManager(tempFIle);
         httpClient = HttpClient.newHttpClient();
@@ -163,8 +161,8 @@ public class SubTaskHttpClientTest {
         assertEquals(201, response.statusCode(), "Ожидался код 201");
 
     }
-    @AfterAll
-    public static void afterAll() {
+    @AfterEach
+    public void afterEach() {
         tempFIle.deleteOnExit();
         httpServer.stop(0);    }
 }
