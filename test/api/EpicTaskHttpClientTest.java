@@ -106,7 +106,7 @@ public class EpicTaskHttpClientTest {
     }
 
     @Test
-    public void shouldNotGetStatus200ForGetEpicTasksSubTasks()throws IOException, InterruptedException {
+    public void shouldGetStatus404ForGetEpicTasksSubTasks()throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/epics/1000/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -168,7 +168,7 @@ public class EpicTaskHttpClientTest {
     }
     @AfterAll
     public static void afterAll() {
-//        tempFIle.deleteOnExit();
+        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }

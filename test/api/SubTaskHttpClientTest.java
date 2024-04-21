@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static util.Parameters.DTF;
 
 public class SubTaskHttpClientTest {
@@ -93,7 +92,7 @@ public class SubTaskHttpClientTest {
 
         HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
         HttpResponse<String> response = httpClient.send(httpRequest, handler);
-        assertNotEquals(200, response.statusCode(), "Ожидался код отличный от 200");
+        assertEquals(404, response.statusCode(), "Ожидался код 404");
     }
 
     @Test
@@ -167,6 +166,6 @@ public class SubTaskHttpClientTest {
     }
     @AfterAll
     public static void afterAll() {
-//        tempFIle.deleteOnExit();
+        tempFIle.deleteOnExit();
         httpServer.stop(0);    }
 }
