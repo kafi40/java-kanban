@@ -133,7 +133,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
 
         try (FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write("id,type,name,status,description,epic,startTime,duration\n");
+            fileWriter.write("id,type,name,description,status,epic,startTime,duration\n");
             for (Task task : tasks.values()) {
                 fileWriter.write(toString(task));
             }
@@ -164,8 +164,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 task.getTaskId(),
                 taskType,
                 task.getTaskName(),
-                task.getTaskStatus(),
                 task.getTaskDescription(),
+                task.getTaskStatus(),
                 task.getClass() == SubTask.class ? ((SubTask) task).getEpicTaskId() : " ",
                 Optional.ofNullable(task.getStartTime()).map(localDateTime ->
                         localDateTime.format(DTF)).orElse(" "),
@@ -191,8 +191,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
         taskType = TaskType.valueOf(taskData.get(1));
         taskName = taskData.get(2);
-        taskStatus = TaskStatus.valueOf(taskData.get(3));
-        description = taskData.get(4);
+        description = taskData.get(3);
+        taskStatus = TaskStatus.valueOf(taskData.get(4));
         if (taskType == TaskType.SUBTASK) {
             epicTaskId = Integer.parseInt(taskData.get(5));
         }

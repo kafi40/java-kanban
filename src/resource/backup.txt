@@ -1,1 +1,5 @@
-id,type,name,status,description,epic,startTime,duration
+id,type,name,description,status,epic,startTime,duration
+1,TASK,Игра на гитаре,Повторить ноты,NEW, ,05.06.2024 17:00,60
+2,TASK,Тренировка в бассейне,Проплыть 500 метров,NEW, ,05.06.2024 19:00,60
+3,EPICTASK,Свадьба,Подготовка к свадьбе,NEW, ,05.06.2024 10:00,60
+4,SUBTASK,Найти Тамаду,Бюджет 50 000 и без глупых конкурсов,NEW,3,05.06.2024 10:00,60

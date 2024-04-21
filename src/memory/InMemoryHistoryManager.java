@@ -44,7 +44,7 @@ public class InMemoryHistoryManager<T extends Task> implements HistoryManager<T>
 
     @Override
     public void add(T element) {
-        Integer id = element.getTaskId();
+        int id = element.getTaskId();
         Node node = tasksLink.get(id);
 
         if (node != null) {

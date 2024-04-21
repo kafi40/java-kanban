@@ -43,11 +43,11 @@ public class HistoryHttpClientTest {
         task.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         task.setDuration(Duration.ofMinutes(30));
         taskManager.addTask(task);
-        taskManager.getTask(1);
     }
 
     @Test
     public void shouldGetStatus200ForGetHistory() throws IOException, InterruptedException {
+        taskManager.getTask(1);
         URI uri = URI.create("http://localhost:8080/history");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -60,7 +60,7 @@ public class HistoryHttpClientTest {
     }
     @AfterAll
     public static void afterAll() {
-        tempFIle.deleteOnExit();
+//        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }
