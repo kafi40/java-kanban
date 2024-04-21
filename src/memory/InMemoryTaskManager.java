@@ -111,8 +111,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void addSubTask(SubTask subTask) {
         EpicTask mainEpicTask = epicTasks.get(subTask.getEpicTaskId());
-        subTasks.put(subTask.getTaskId(), subTask);
         mainEpicTask.addSubTask(subTask);
+        subTasks.put(subTask.getTaskId(), subTask);
         setEpicTaskStatus(mainEpicTask);
         setEpicTaskDateTime(mainEpicTask);
         isSorted = false;
