@@ -28,8 +28,6 @@ public class EpicTaskHttpClientTest {
     public static HttpClient httpClient;
     public static TaskManager taskManager;
     public static HttpServer httpServer;
-    public static EpicTask epicTask;
-    public static SubTask subTask;
     public static File tempFIle;
     @BeforeAll
     public static void beforeAll() throws IOException {
@@ -45,7 +43,7 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTasks() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -60,7 +58,7 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTaskId() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -88,9 +86,9 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTasksSubTasks() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
@@ -120,7 +118,7 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteEpicTaskId() throws IOException, InterruptedException {
-        epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
