@@ -1,20 +1,20 @@
 import com.sun.net.httpserver.HttpServer;
 import handlers.*;
-import interfaces.TaskManager;
 import util.Managers;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import static util.Parameters.FILE;
+
 
 public class HttpTaskServer {
     private static final int PORT = 8080;
     private final HttpServer httpServer = HttpServer.create();
-    public TaskManager taskManager = Managers.getDefault();
 
     public HttpTaskServer() throws IOException {
     }
 
     public static void main(String[] args) throws IOException {
+        Managers.setFileBackedTaskManager(FILE);
         HttpTaskServer httpTaskServer = new HttpTaskServer();
         httpTaskServer.start();
     }

@@ -1,9 +1,16 @@
 package handlers;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import exceptions.TimeIntersectionException;
+import task.SubTask;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+
+import static util.Parameters.ENCODING;
 
 public class SubTaskHandler extends Handler implements HttpHandler {
     @Override
@@ -23,10 +30,10 @@ public class SubTaskHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/subtasks/" + id)) {
-            response = gson.toJson(taskManager.getSubTask(id));
-            if (!response.equals("null")) {
+            try {
+                response = gson.toJson(taskManager.getSubTask(id));
                 responseCode = 200;
-            } else {
+            } catch (RuntimeException e) {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }
@@ -39,9 +46,27 @@ public class SubTaskHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/subtasks")) {
-//            response = taskManager.addTask();
+            try (InputStream inputStream = exchange.getRequestBody()) {
+                String jsonString = new String(inputStream.readAllBytes(), ENCODING);
+                JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+                SubTask subTask = gson.fromJson(jsonString, SubTask.class);
+                if (taskManager.isTimeIntersection(subTask)) {
+                    response = "Задачи пересекаются";
+                    responseCode = 406;
+                    throw new TimeIntersectionException("Задачи пересекаются");
+                }
+                if (jsonObject.has("taskId")) {
+                    taskManager.updateSubTask(subTask);
+                    response = "Задача отредактирована";
+                } else {
+                    taskManager.addSubTask(subTask);
+                    response = "Задача добавлена";
+                }
+                responseCode = 201;
+            } catch (TimeIntersectionException e) {
+                System.out.println(e);
+            }
         }
-
         exchange.sendResponseHeaders(responseCode, 0);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(response.getBytes());

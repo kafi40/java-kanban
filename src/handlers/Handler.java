@@ -5,23 +5,24 @@ import adapters.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpHandler;
+import deserializers.EpicTaskDeserializer;
+import deserializers.SubTaskDeserializer;
+import deserializers.TaskDeserializer;
 import interfaces.TaskManager;
 import serializers.EpicTaskSerializer;
 import serializers.SubTaskSerializer;
 import task.EpicTask;
 import task.SubTask;
-import tokens.TaskListTypeToken;
+import task.Task;
 import util.Managers;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 public abstract class Handler implements HttpHandler {
     public static TaskManager taskManager = Managers.getManagerBacked();
-    public static TaskListTypeToken token = new TaskListTypeToken();
     public Gson gson;
     public String method;
     public String path;
-    public String request;
     public String response;
     public int responseCode;
     public String[] pathSplit;
@@ -34,6 +35,9 @@ public abstract class Handler implements HttpHandler {
                 .registerTypeAdapter(Duration.class, new DurationAdapter())
                 .registerTypeAdapter(EpicTask.class, new EpicTaskSerializer())
                 .registerTypeAdapter(SubTask.class, new SubTaskSerializer())
+                .registerTypeAdapter(Task.class, new TaskDeserializer())
+                .registerTypeAdapter(EpicTask.class, new EpicTaskDeserializer())
+                .registerTypeAdapter(SubTask.class, new SubTaskDeserializer())
                 .create();
     }
 }

@@ -1,6 +1,6 @@
 package exceptions;
 
-public class TimeIntersectionException extends Exception {
+public class TimeIntersectionException extends RuntimeException {
 
     public TimeIntersectionException(final String message) {
         super(message);

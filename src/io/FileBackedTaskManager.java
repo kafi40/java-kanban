@@ -3,17 +3,14 @@ package io;
 import enums.TaskStatus;
 import enums.TaskType;
 import exceptions.ManagerSaveException;
-import interfaces.TaskManager;
 import memory.InMemoryTaskManager;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
-import util.Managers;
 import java.io.*;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import static util.Parameters.DTF;
@@ -21,6 +18,7 @@ import static util.Parameters.DTF;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
+
     public FileBackedTaskManager(File file) {
         this.file = file;
     }
@@ -40,7 +38,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
                 if (task.getClass() == SubTask.class) {
                     fileBackedTaskManager.subTasks.put(task.getTaskId(), (SubTask) task);
-                    fileBackedTaskManager.setEpicTaskDateTime(((SubTask) task).getEpicTask());
+                    EpicTask mainEpicTask = fileBackedTaskManager.epicTasks.get(((SubTask) task).getEpicTaskId());
+                    mainEpicTask.addSubTask((SubTask) task);
+                    fileBackedTaskManager.setEpicTaskDateTime(mainEpicTask);
                 }
             }
             return fileBackedTaskManager;
@@ -72,16 +72,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     @Override
     public void updateTask(Task task) {
         super.updateTask(task);
+        save();
     }
 
     @Override
     public void updateEpicTask(EpicTask epicTask) {
         super.updateEpicTask(epicTask);
+        save();
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
         super.updateSubTask(subTask);
+        save();
     }
 
     @Override
@@ -163,14 +166,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 task.getTaskName(),
                 task.getTaskStatus(),
                 task.getTaskDescription(),
-                task.getClass() == SubTask.class ? ((SubTask) task).getEpicTask().getTaskId() : " ",
+                task.getClass() == SubTask.class ? ((SubTask) task).getEpicTaskId() : " ",
                 Optional.ofNullable(task.getStartTime()).map(localDateTime ->
                         localDateTime.format(DTF)).orElse(" "),
                 Optional.ofNullable(task.getDuration()).map(duration ->
                         String.valueOf(duration.toMinutes())).orElse(" "));
     }
 
-    private Task fromString(String data) throws ManagerSaveException {
+    public Task fromString(String data) throws ManagerSaveException {
         int taskId;
         int epicTaskId = 0;
         TaskType taskType;
@@ -217,8 +220,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             epicTask.setTaskId(taskId);
             return epicTask;
         } else if (taskType == TaskType.SUBTASK) {
-            EpicTask mainEpicTask = epicTasks.get(epicTaskId);
-            subTask = new SubTask(taskName, description, taskStatus, mainEpicTask);
+            subTask = new SubTask(taskName, description, taskStatus, epicTaskId);
             subTask.setTaskId(taskId);
             if (optionalStartTime.isPresent()) {
                 if (!optionalStartTime.get().isBlank()) {

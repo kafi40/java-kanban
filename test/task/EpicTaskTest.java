@@ -18,7 +18,7 @@ public class EpicTaskTest {
     @Test
     public void canAddSubTaskInEpicTask() {
         epicTask = new EpicTask("Name", "Description");
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
         epicTask.addSubTask(subTask);
         assertFalse(epicTask.getSubTasks().isEmpty(), "Список пустой");
     }

@@ -1,9 +1,16 @@
 package handlers;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import task.EpicTask;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+
+import static util.Parameters.ENCODING;
 
 public class EpicTaskHandler extends Handler implements HttpHandler {
     @Override
@@ -23,20 +30,20 @@ public class EpicTaskHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/epics/" + id)) {
-            response = gson.toJson(taskManager.getEpicTask(id));
-            if (!response.equals("null")) {
+            try {
+                response = gson.toJson(taskManager.getEpicTask(id));
                 responseCode = 200;
-            } else {
+            } catch (RuntimeException e) {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }
         }
 
         if (method.equals("GET") && path.equals("/epics/" + id + "/subtasks")) {
-            response = gson.toJson(taskManager.getEpicTask(id).getSubTasks());
-            if (!response.equals("null")) {
+            try {
+                response = gson.toJson(taskManager.getEpicSubTasks(id));
                 responseCode = 200;
-            } else {
+            } catch (RuntimeException e) {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }
@@ -49,14 +56,23 @@ public class EpicTaskHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/epics")) {
-//            response = taskManager.addTask();
+            try (InputStream inputStream = exchange.getRequestBody()) {
+                String jsonString = new String(inputStream.readAllBytes(), ENCODING);
+                JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+                EpicTask epicTask = gson.fromJson(jsonString, EpicTask.class);
+                if (jsonObject.has("taskId")) {
+                    taskManager.updateEpicTask(epicTask);
+                } else {
+                    taskManager.addEpicTask(epicTask);
+                }
+            }
+            response = "Задача добавлена";
+            responseCode = 201;
         }
 
         exchange.sendResponseHeaders(responseCode, 0);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(response.getBytes());
-        } catch (Exception e) {
-            System.out.println(e);
         }
     }
 }

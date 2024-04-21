@@ -1,13 +1,12 @@
 package memory;
 
 import enums.TaskStatus;
-import exceptions.InputDurationException;
-import exceptions.TimeIntersectionException;
+import interfaces.HistoryManager;
 import interfaces.TaskManager;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
-import util.Utils;
+import util.Managers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -15,10 +14,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
+    protected final HistoryManager historyManager = Managers.getDefaultHistory();
     protected final HashMap<Integer, Task> tasks = new HashMap<>();
     protected final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
     protected final HashMap<Integer, SubTask> subTasks = new HashMap<>();
-    protected final List<Task> historyList = new ArrayList<>();
     protected final TreeSet<Task> taskTreeSet;
     private boolean isSorted = false;
     public static int taskIdCounter = 0;
@@ -82,90 +81,62 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        historyList.add(tasks.get(id));
+        historyManager.add(tasks.get(id));
         return tasks.get(id);
     }
 
     @Override
     public EpicTask getEpicTask(int id) {
-        historyList.add(epicTasks.get(id));
+        historyManager.add(epicTasks.get(id));
         return epicTasks.get(id);
     }
 
     @Override
     public SubTask getSubTask(int id) {
-        historyList.add(subTasks.get(id));
+        historyManager.add(subTasks.get(id));
         return subTasks.get(id);
     }
 
     @Override
     public void addTask(Task task) {
-        try {
-            checkTimeIntersection(task);
-            tasks.put(task.getTaskId(), task);
-            isSorted = false;
-        } catch (TimeIntersectionException e) {
-            throw new RuntimeException(e);
-        }
+        tasks.put(task.getTaskId(), task);
+        isSorted = false;
     }
 
     @Override
     public void addEpicTask(EpicTask epicTask) {
-        try {
-            checkTimeIntersection(epicTask);
-            epicTasks.put(epicTask.getTaskId(), epicTask);
-            isSorted = false;
-        } catch (TimeIntersectionException e) {
-            throw new RuntimeException(e);
-        }
+        epicTasks.put(epicTask.getTaskId(), epicTask);
+        isSorted = false;
     }
 
     @Override
     public void addSubTask(SubTask subTask) {
-        try {
-            checkTimeIntersection(subTask);
-            subTasks.put(subTask.getTaskId(), subTask);
-            setEpicTaskStatus(subTask.getEpicTask());
-            setEpicTaskDateTime(subTask.getEpicTask());
-            isSorted = false;
-        } catch (TimeIntersectionException e) {
-            throw new RuntimeException(e);
-        }
+        EpicTask mainEpicTask = epicTasks.get(subTask.getEpicTaskId());
+        subTasks.put(subTask.getTaskId(), subTask);
+        mainEpicTask.addSubTask(subTask);
+        setEpicTaskStatus(mainEpicTask);
+        setEpicTaskDateTime(mainEpicTask);
+        isSorted = false;
     }
 
     @Override
     public void updateTask(Task task) {
-        try {
-            checkTimeIntersection(task);
-            tasks.put(task.getTaskId(), task);
-            isSorted = false;
-        } catch (TimeIntersectionException e) {
-            throw new RuntimeException(e);
-        }
+        tasks.put(task.getTaskId(), task);
+        isSorted = false;
     }
 
     @Override
     public void updateEpicTask(EpicTask epicTask) {
-        try {
-            checkTimeIntersection(epicTask);
-            epicTasks.put(epicTask.getTaskId(), epicTask);
-            isSorted = false;
-        } catch (TimeIntersectionException e) {
-            throw new RuntimeException(e);
-        }
+        epicTasks.put(epicTask.getTaskId(), epicTask);
+        isSorted = false;
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
-        try {
-            checkTimeIntersection(subTask);
-            subTasks.put(subTask.getTaskId(), subTask);
-            setEpicTaskStatus(subTask.getEpicTask());
-            setEpicTaskDateTime(subTask.getEpicTask());
-            isSorted = false;
-        } catch (TimeIntersectionException e) {
-            throw new RuntimeException(e);
-        }
+        subTasks.put(subTask.getTaskId(), subTask);
+        setEpicTaskStatus(epicTasks.get(subTask.getEpicTaskId()));
+        setEpicTaskDateTime(epicTasks.get(subTask.getEpicTaskId()));
+        isSorted = false;
     }
 
     @Override
@@ -183,7 +154,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteSubTask(int id) {
-        EpicTask epicTask = subTasks.get(id).getEpicTask();
+        EpicTask epicTask = epicTasks.get(subTasks.get(id).getEpicTaskId());
+        SubTask subTask = subTasks.get(id);
+        epicTask.getSubTasks().remove(subTask);
         subTasks.remove(id);
         setEpicTaskDateTime(epicTask);
         isSorted = false;
@@ -191,7 +164,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getHistory() {
-        return null;
+        return historyManager.getHistory();
     }
 
     @Override
@@ -242,6 +215,7 @@ public class InMemoryTaskManager implements TaskManager {
             }
         }
     }
+
     public void setEpicTaskDateTime(EpicTask epicTask) {
         Optional<SubTask> optionalStartTime = epicTask.getSubTasks().stream()
                 .filter(subTask -> subTask.getStartTime() != null)
@@ -252,19 +226,21 @@ public class InMemoryTaskManager implements TaskManager {
                 .filter(subTask -> subTask.getStartTime() != null)
                 .max(Comparator.comparing(Task::getEndTime))
                 .ifPresent(subTask -> epicTask.setEndTime(subTask.getEndTime()));
-
-        epicTask.setDuration(Duration.between(epicTask.getStartTime(), epicTask.getEndTime()));
+        if (epicTask.getStartTime() != null && epicTask.getEndTime() != null) {
+            epicTask.setDuration(Duration.between(epicTask.getStartTime(), epicTask.getEndTime()));
+        } else {
+            epicTask.setDuration(Duration.ofMinutes(0));
+        }
     }
-    public void checkTimeIntersection(Task task) throws TimeIntersectionException {
+
+    public boolean isTimeIntersection(Task task) {
         Duration duration;
         LocalDateTime startTime;
         LocalDateTime endTime;
         Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(task.getStartTime());
         Optional<Duration> optionalDuration = Optional.ofNullable(task.getDuration());
-
-
         if (optionalStartTime.isEmpty()) {
-            return;
+            return false;
         }
         if (optionalDuration.isPresent()) {
             startTime = optionalStartTime.get();
@@ -276,18 +252,20 @@ public class InMemoryTaskManager implements TaskManager {
                 }
                 if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
                         || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                    throw new TimeIntersectionException("Пересечение задач");
+                    return true;
                 }
             }
-            for (Task t : subTasks.values()) {
+
+            for (SubTask t : subTasks.values()) {
                 if (task.getTaskId().equals(t.getTaskId())) {
                     continue;
                 }
                 if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
                         || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                    throw new TimeIntersectionException("Пересечение задач");
+                    return true;
                 }
             }
         }
+        return false;
     }
 }

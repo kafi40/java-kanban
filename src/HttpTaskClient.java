@@ -1,51 +1,75 @@
-import adapters.DurationAdapter;
-import adapters.LocalDateTimeAdapter;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import enums.TaskStatus;
-import serializers.EpicTaskSerializer;
-import serializers.SubTaskSerializer;
-import task.EpicTask;
-import task.SubTask;
-import task.Task;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.LocalDateTime;
-
-import static util.Parameters.DTF;
 
 public class HttpTaskClient {
-    public final HttpClient httpClient = HttpClient.newHttpClient();
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        HttpTaskClient httpTaskClient = new HttpTaskClient();
-        Gson gson =  new GsonBuilder().setPrettyPrinting()
-                .serializeNulls()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .registerTypeAdapter(Duration.class, new DurationAdapter())
-                .registerTypeAdapter(EpicTask.class, new EpicTaskSerializer())
-                .registerTypeAdapter(SubTask.class, new SubTaskSerializer())
-                .create();;
-        String result;
-        Task createTask = new Task("Игра на гитаре", "Выучить новые аккорды", TaskStatus.NEW);
-        createTask.setStartTime(LocalDateTime.parse("05.06.2024 18:00", DTF));
-        createTask.setDuration(Duration.ofMinutes(60));
-
-        result = gson.toJson(createTask);
-
+        HttpClient httpClient = HttpClient.newHttpClient();
+        String result = "{\"taskName\":\"Игра на гитаре\",\"taskDescription\":\"Выучить новые аккорды\"," +
+                        "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"05.06.2024 17:00\"}";
         URI uri = URI.create("http://localhost:8080/tasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(result))
                 .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(result))
                 .version(HttpClient.Version.HTTP_1_1)
                 .build();
 
         HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
-        HttpResponse<String> response = httpTaskClient.httpClient.send(httpRequest, handler);
-        System.out.println(response.statusCode());
+        HttpResponse<String> response = httpClient.send(httpRequest, handler);
+        System.out.println(response);
+
+        result = "{\"taskName\":\"Тренировка в бассейне\",\"taskDescription\":\"Проплыть 500 метров\"," +
+                 "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"05.06.2024 19:00\"}";
+        uri = URI.create("http://localhost:8080/tasks");
+        httpRequest = HttpRequest.newBuilder()
+                .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(result))
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+
+        handler = HttpResponse.BodyHandlers.ofString();
+        response = httpClient.send(httpRequest, handler);
+        System.out.println(response);
+
+        result = "{\"taskName\":\"Свадьба\",\"taskDescription\":\"Подготовка к свадьбе\"}";
+        uri = URI.create("http://localhost:8080/epics");
+        httpRequest = HttpRequest.newBuilder()
+                .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(result))
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+
+        handler = HttpResponse.BodyHandlers.ofString();
+        response = httpClient.send(httpRequest, handler);
+        System.out.println(response);
+
+        result = "{\"taskName\":\"Найти Тамаду\",\"taskDescription\":\"Бюджет 50 000 и без глупых конкурсов\"," +
+                 "\"taskStatus\":\"NEW\",\"epicTaskId\":3,\"duration\":60,\"startTime\":\"05.06.2024 10:00\"}";
+        uri = URI.create("http://localhost:8080/subtasks");
+        httpRequest = HttpRequest.newBuilder()
+                .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(result))
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+
+        handler = HttpResponse.BodyHandlers.ofString();
+        response = httpClient.send(httpRequest, handler);
+        System.out.println(response);
+
+        result = "{\"taskId\":1,\"taskName\":\"Игра на гитаре\",\"taskDescription\":\"Повторить ноты\"," +
+                 "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"05.06.2024 17:00\"}";
+        uri = URI.create("http://localhost:8080/tasks");
+        httpRequest = HttpRequest.newBuilder()
+                .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(result))
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+
+        handler = HttpResponse.BodyHandlers.ofString();
+        response = httpClient.send(httpRequest, handler);
+        System.out.println(response);
     }
 }

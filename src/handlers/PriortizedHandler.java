@@ -14,10 +14,13 @@ public class PriortizedHandler extends Handler implements HttpHandler {
         method = exchange.getRequestMethod();
         path = exchange.getRequestURI().getPath();
         pathSplit = path.split("/");
-        id = Integer.parseInt(pathSplit[2]);
+        if (pathSplit.length >= 3) {
+            id = Integer.parseInt(pathSplit[2]);
+        }
 
         if (method.equals("GET") && path.equals("/prioritized")) {
-            response = taskManager.getPrioritizedTasks().toString();
+            response = gson.toJson(taskManager.getPrioritizedTasks());
+            responseCode = 200;
         }
 
         exchange.sendResponseHeaders(200, 0);

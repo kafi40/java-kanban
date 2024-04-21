@@ -5,14 +5,13 @@ import interfaces.TaskManager;
 import io.FileBackedTaskManager;
 import memory.InMemoryHistoryManager;
 import memory.InMemoryTaskManager;
+import java.io.File;
 
-import static util.Parameters.FILE;
 
 public class Managers {
-
     private static final InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
     private static final InMemoryHistoryManager inMemoryHistoryManager  = new InMemoryHistoryManager();
-    private static final FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(FILE);
+    private static FileBackedTaskManager fileBackedTaskManager;
 
     public static TaskManager getDefault() {
         return inMemoryTaskManager;
@@ -22,7 +21,11 @@ public class Managers {
         return inMemoryHistoryManager;
     }
 
-    public static TaskManager getManagerBacked(){
+    public static TaskManager getManagerBacked() {
         return fileBackedTaskManager;
+    }
+
+    public static void setFileBackedTaskManager(File file) {
+        fileBackedTaskManager = FileBackedTaskManager.loadFromFile(file);
     }
 }
