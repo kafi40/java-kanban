@@ -28,8 +28,6 @@ public class SubTaskHttpClientTest {
     public static HttpClient httpClient;
     public static TaskManager taskManager;
     public static HttpServer httpServer;
-    public static EpicTask epicTask;
-    public static SubTask subTask;
     public static File tempFIle;
     @BeforeAll
     public static void beforeAll() throws IOException {
