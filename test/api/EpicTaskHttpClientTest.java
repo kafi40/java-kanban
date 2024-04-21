@@ -37,6 +37,7 @@ public class EpicTaskHttpClientTest {
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
+        epicTask.addSubTask(subTask);
         taskManager.addSubTask(subTask);
     }
 
