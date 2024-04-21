@@ -1,11 +1,8 @@
 package task;
 
 import enums.TaskStatus;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Optional;
 
 public class EpicTask extends Task {
     private final ArrayList<SubTask> subTasks;
