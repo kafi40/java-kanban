@@ -46,10 +46,6 @@ public class EpicTaskHttpClientTest {
         epicTask1 = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         taskManager.addEpicTask(epicTask1);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
-        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
-        subTask.setDuration(Duration.ofMinutes(30));
-        taskManager.addSubTask(subTask);
     }
 
     @Test
@@ -93,6 +89,10 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTasksSubTasks() throws IOException, InterruptedException {
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/epics/1/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
