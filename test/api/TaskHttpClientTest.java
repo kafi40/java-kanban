@@ -70,7 +70,7 @@ public class TaskHttpClientTest {
     }
 
     @Test
-    public void shouldNotGetStatus200ForGetTaskId() throws IOException, InterruptedException {
+    public void shouldGetStatus404ForGetTaskId() throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/tasks/1000");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -132,7 +132,7 @@ public class TaskHttpClientTest {
     @Test
     public void shouldGetStatus201ForUpdateTask() throws IOException, InterruptedException {
         String result = """
-                {"taskId":2,"taskName":"Игра на гитаре","taskDescription":"Повторить ноты","taskStatus":"NEW","duration":60,"startTime":"05.06.2024 23:00"}""";
+                {"taskId":1,"taskName":"new name","taskDescription":"new description","taskStatus":"NEW","duration":60,"startTime":"05.06.2024 01:00"}""";
         URI uri = URI.create("http://localhost:8080/tasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)

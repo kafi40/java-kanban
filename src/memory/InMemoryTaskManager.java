@@ -128,12 +128,21 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpicTask(EpicTask epicTask) {
         epicTasks.put(epicTask.getTaskId(), epicTask);
+        subTasks.values().forEach(subTask -> {
+            if (subTask.getEpicTaskId() == epicTask.getTaskId()) {
+                epicTask.addSubTask(subTask);
+            }
+        });
+        setEpicTaskDateTime(epicTask);
         isSorted = false;
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
+        EpicTask epicTask = epicTasks.get(subTask.getEpicTaskId());
+        epicTask.getSubTasks().remove(subTask);
         subTasks.put(subTask.getTaskId(), subTask);
+        epicTask.addSubTask(subTask);
         setEpicTaskStatus(epicTasks.get(subTask.getEpicTaskId()));
         setEpicTaskDateTime(epicTasks.get(subTask.getEpicTaskId()));
         isSorted = false;
@@ -155,8 +164,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteSubTask(int id) {
         EpicTask epicTask = epicTasks.get(subTasks.get(id).getEpicTaskId());
-        SubTask subTask = subTasks.get(id);
-        epicTask.getSubTasks().remove(subTask);
+        epicTask.getSubTasks().remove(subTasks.get(id));
         subTasks.remove(id);
         setEpicTaskDateTime(epicTask);
         isSorted = false;

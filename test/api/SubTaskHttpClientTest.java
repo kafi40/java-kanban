@@ -53,8 +53,6 @@ public class SubTaskHttpClientTest {
         subTask1.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
         taskManager.addSubTask(subTask1);
-        epicTask.addSubTask(subTask);
-        epicTask.addSubTask(subTask1);
     }
 
     @Test
@@ -162,6 +160,5 @@ public class SubTaskHttpClientTest {
     @AfterAll
     public static void afterAll() {
         tempFIle.deleteOnExit();
-        httpServer.stop(0);
-    }
+        httpServer.stop(0);    }
 }

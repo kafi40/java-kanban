@@ -151,7 +151,7 @@ public class EpicTaskHttpClientTest {
     @Test
     public void shouldGetStatus201ForUpdateEpicTask() throws IOException, InterruptedException {
         String result = """
-                {"taskID":2,"taskName":"Свадьба","taskDescription":"Подготовка к свадьбе"}""";
+                {"taskId":1,"taskName":"new name","taskDescription":"new description"}""";
         URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
