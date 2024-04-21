@@ -29,7 +29,6 @@ public class EpicTaskHttpClientTest {
     public static TaskManager taskManager;
     public static HttpServer httpServer;
     public static EpicTask epicTask;
-    public static EpicTask epicTask1;
     public static SubTask subTask;
     public static File tempFIle;
     @BeforeAll
@@ -42,14 +41,12 @@ public class EpicTaskHttpClientTest {
         httpServer.bind(new InetSocketAddress(8080), 0);
         httpServer.createContext("/epics", new EpicTaskHandler());
         httpServer.start();
-        epicTask = new EpicTask("Name", "Description");
-        epicTask1 = new EpicTask("Name", "Description");
-        taskManager.addEpicTask(epicTask);
-        taskManager.addEpicTask(epicTask1);
     }
 
     @Test
     public void shouldGetStatus200ForGetEpicTasks() throws IOException, InterruptedException {
+        epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
         URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -63,7 +60,9 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/epics/1");
+        epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -75,7 +74,7 @@ public class EpicTaskHttpClientTest {
     }
 
     @Test
-    public void shouldNotGetStatus200ForGetEpicTaskId() throws IOException, InterruptedException {
+    public void shouldGetStatus404ForGetEpicTaskId() throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/epics/1000");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -89,11 +88,13 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTasksSubTasks() throws IOException, InterruptedException {
+        epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
-        URI uri = URI.create("http://localhost:8080/epics/1/subtasks");
+        URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId() + "/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -119,7 +120,9 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteEpicTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/epics/2");
+        epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
                 .uri(uri)
@@ -165,7 +168,7 @@ public class EpicTaskHttpClientTest {
     }
     @AfterAll
     public static void afterAll() {
-        tempFIle.deleteOnExit();
+//        tempFIle.deleteOnExit();
         httpServer.stop(0);
     }
 }
