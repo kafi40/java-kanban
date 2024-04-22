@@ -171,7 +171,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteEpicTask(int id) {
-        epicTasks.get(id).getSubTasks().stream().filter(subTasks::containsValue).forEach(subTask -> subTasks.remove(subTask.getTaskId()));
+        subTasks.values().forEach(subTask -> {
+            if (subTask.getEpicTaskId() == id) {
+                subTasks.remove(subTask.getTaskId());
+            }
+        });
         epicTasks.remove(id);
         isSorted = false;
     }

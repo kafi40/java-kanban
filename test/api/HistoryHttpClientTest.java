@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
 import handlers.HistoryHandler;
 import interfaces.TaskManager;
+import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,9 +27,11 @@ public class HistoryHttpClientTest {
     public static TaskManager taskManager;
     public static HttpServer httpServer;
     public static Task task;
+
     @BeforeAll
     public static void beforeAll() throws IOException {
-        taskManager = Managers.getManagerBacked();
+        taskManager = null;
+        taskManager = Managers.getDefault();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
@@ -66,5 +69,6 @@ public class HistoryHttpClientTest {
     @AfterAll
     public static void afterAll() {
         httpServer.stop(0);
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

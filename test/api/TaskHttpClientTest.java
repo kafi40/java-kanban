@@ -4,10 +4,10 @@ import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
 import handlers.TasksHandler;
 import interfaces.TaskManager;
+import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.Task;
 import util.Managers;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -24,20 +24,30 @@ public class TaskHttpClientTest {
     public static TaskManager taskManager;
     public static HttpServer httpServer;
     public static Task task;
+    public static Task task1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        taskManager = null;
+        taskManager = Managers.getDefault();
+        task = new Task("Name", "Description", TaskStatus.NEW);
+        task.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        task.setDuration(Duration.ofMinutes(30));
+        taskManager.addTask(task);
+        task1 = new Task("Name", "Description", TaskStatus.NEW);
+        task1.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        task1.setDuration(Duration.ofMinutes(30));
+        taskManager.addTask(task1);
+    }
+
     @BeforeEach
     public void beforeEach() throws IOException {
-        taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
         httpServer.createContext("/tasks", new TasksHandler());
         httpServer.start();
-        task = new Task("Name", "Description", TaskStatus.NEW);
-        task.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
-        task.setDuration(Duration.ofMinutes(30));
-        taskManager.addTask(task);
     }
-
     @Test
     public void shouldGetStatus200ForGetTasks() throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/tasks");
@@ -53,7 +63,7 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/tasks/1");
+        URI uri = URI.create("http://localhost:8080/tasks/" + task.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -79,7 +89,7 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/tasks/2");
+        URI uri = URI.create("http://localhost:8080/tasks/" + task1.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
                 .uri(uri)
@@ -143,5 +153,10 @@ public class TaskHttpClientTest {
     @AfterEach
     public void afterEach() {
         httpServer.stop(0);
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
 import handlers.EpicTaskHandler;
 import interfaces.TaskManager;
+import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
@@ -23,22 +24,24 @@ import static util.Parameters.DTF;
 public class EpicTaskHttpClientTest {
     public  HttpClient httpClient;
     public  HttpServer httpServer;
-    public static TaskManager taskManager = Managers.getManagerBacked();
+    public static TaskManager taskManager;
     public static EpicTask epicTask;
     public static EpicTask epicTask1;
     public static SubTask subTask;
 
     @BeforeAll
     public static void beforeAll() {
+        taskManager = null;
+        taskManager = Managers.getDefault();
         epicTask = new EpicTask("Name", "Description");
         epicTask1 = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         taskManager.addEpicTask(epicTask1);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, 1);
+        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
-        epicTask.addSubTask(subTask);
         taskManager.addSubTask(subTask);
+        epicTask.addSubTask(subTask);
     }
 
     @BeforeEach
@@ -148,7 +151,7 @@ public class EpicTaskHttpClientTest {
     @Test
     public void shouldGetStatus201ForUpdateEpicTask() throws IOException, InterruptedException {
         String result = """
-                {"taskId":1,"taskName":"new name","taskDescription":"new description"}""";
+                {"taskId":"1","taskName":"new name","taskDescription":"new description"}""";
         URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -164,5 +167,10 @@ public class EpicTaskHttpClientTest {
     @AfterEach
     public void afterEach() {
         httpServer.stop(0);
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }
