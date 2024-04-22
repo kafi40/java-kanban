@@ -8,7 +8,6 @@ import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
-import util.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -30,15 +29,14 @@ public class SubTaskHttpClientTest {
 
     @BeforeAll
     public static void beforeAll() {
-        taskManager = null;
-        taskManager = Managers.getDefault();
+        taskManager = new InMemoryTaskManager();
         epicTask = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 01:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         subTask1 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask1.setStartTime(LocalDateTime.parse("15.04.2024 16:00", DTF));
+        subTask1.setStartTime(LocalDateTime.parse("15.04.2024 02:00", DTF));
         subTask1.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
         taskManager.addSubTask(subTask1);
@@ -111,7 +109,7 @@ public class SubTaskHttpClientTest {
     @Test
     public void shouldGetStatus201ForAddSubTaskId() throws IOException, InterruptedException {
         String result = """
-                {"taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000 и без глупых конкурсов","taskStatus":"NEW","epicTaskId":1,"duration":60,"startTime":"05.06.2024 08:00"}""";
+                {"taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000 и без глупых конкурсов","taskStatus":"NEW","epicTaskId":1,"duration":30,"startTime":"05.06.2024 16:00"}""";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -128,7 +126,7 @@ public class SubTaskHttpClientTest {
     @Test
     public void shouldGetStatus406ForAddTaskId() throws IOException, InterruptedException {
         String result = """
-                {"taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000 и без глупых конкурсов","taskStatus":"NEW","epicTaskId":1,"duration":60,"startTime":"05.06.2024 10:00"}""";
+                {"taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000 и без глупых конкурсов","taskStatus":"NEW","epicTaskId":1,"duration":30,"startTime":"05.06.2024 01:00"}""";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -145,7 +143,7 @@ public class SubTaskHttpClientTest {
     @Test
     public void shouldGetStatus201ForUpdateSubTask() throws IOException, InterruptedException {
         String result = """
-                {"taskId":2, "taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000","taskStatus":"NEW","epicTaskId":1,"duration":60,"startTime":"05.06.2024 19:00"}""";
+                {"taskId":2, "taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000","taskStatus":"NEW","epicTaskId":1,"duration":30,"startTime":"05.06.2024 04:00"}""";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)

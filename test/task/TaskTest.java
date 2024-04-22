@@ -1,5 +1,7 @@
 package task;
 
+import memory.InMemoryTaskManager;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import enums.TaskStatus;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,5 +21,10 @@ public class TaskTest {
         task = new Task("Name", "Description", TaskStatus.NEW);
         task2 = new Task("Name", "Description", TaskStatus.NEW);
         assertNotEquals(task.equals(task2), "Задачи равны");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

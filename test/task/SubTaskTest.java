@@ -1,5 +1,7 @@
 package task;
 
+import memory.InMemoryTaskManager;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import enums.TaskStatus;
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,5 +30,10 @@ public class SubTaskTest {
         epicTask = new EpicTask("Name", "Description");
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
         assertEquals(subTask.getEpicTaskId(), epicTask.getTaskId(), "Не является эпиком для подзадачи");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

@@ -1,5 +1,6 @@
 package memory;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import task.EpicTask;
@@ -93,5 +94,9 @@ public class InMemoryTaskManagerTest {
 
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask2.setStartTime(LocalDateTime.parse("15.04.2024 12:30", DTF));
+    }
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.Task;
-import util.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -30,8 +29,7 @@ public class HistoryHttpClientTest {
 
     @BeforeAll
     public static void beforeAll() throws IOException {
-        taskManager = null;
-        taskManager = Managers.getDefault();
+        taskManager = new InMemoryTaskManager();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);

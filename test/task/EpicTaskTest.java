@@ -1,5 +1,7 @@
 package task;
 
+import memory.InMemoryTaskManager;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import enums.TaskStatus;
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,5 +30,10 @@ public class EpicTaskTest {
         epicTask = new EpicTask("Name", "Description");
         epicTask2 = new EpicTask("Name", "Description");
         assertNotEquals(epicTask.equals(epicTask2), "Задачи равны");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

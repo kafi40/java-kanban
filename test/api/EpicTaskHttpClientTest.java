@@ -8,7 +8,6 @@ import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
-import util.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -31,14 +30,13 @@ public class EpicTaskHttpClientTest {
 
     @BeforeAll
     public static void beforeAll() {
-        taskManager = null;
-        taskManager = Managers.getDefault();
+        taskManager = new InMemoryTaskManager();
         epicTask = new EpicTask("Name", "Description");
         epicTask1 = new EpicTask("Name", "Description");
         taskManager.addEpicTask(epicTask);
         taskManager.addEpicTask(epicTask1);
         subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+        subTask.setStartTime(LocalDateTime.parse("15.04.2024 05:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         taskManager.addSubTask(subTask);
         epicTask.addSubTask(subTask);

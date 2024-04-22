@@ -7,7 +7,6 @@ import interfaces.TaskManager;
 import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.Task;
-import util.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -28,8 +27,7 @@ public class TaskHttpClientTest {
 
     @BeforeAll
     public static void beforeAll() {
-        taskManager = null;
-        taskManager = Managers.getDefault();
+        taskManager = new InMemoryTaskManager();
         task = new Task("Name", "Description", TaskStatus.NEW);
         task.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         task.setDuration(Duration.ofMinutes(30));

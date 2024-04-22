@@ -1,6 +1,7 @@
 package memory;
 
 import enums.TaskStatus;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,5 +55,9 @@ class InMemoryTaskHistoryTest {
         historyManager.add(subTask1);
         tasksList = historyManager.getHistory();
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
+    }
+    @AfterAll
+    public static void afterAll() {
+        InMemoryTaskManager.taskIdCounter = 0;
     }
 }
