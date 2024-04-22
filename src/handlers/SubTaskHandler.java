@@ -9,7 +9,6 @@ import task.SubTask;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import static util.Parameters.ENCODING;
 
 public class SubTaskHandler extends Handler implements HttpHandler {
@@ -30,10 +29,10 @@ public class SubTaskHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/subtasks/" + id)) {
-            try {
+            if (taskManager.getSubTask(id) != null) {
                 response = gson.toJson(taskManager.getSubTask(id));
                 responseCode = 200;
-            } catch (RuntimeException e) {
+            } else {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }

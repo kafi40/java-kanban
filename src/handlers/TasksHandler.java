@@ -30,10 +30,10 @@ public class TasksHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/tasks/" + id)) {
-            try {
+            if (taskManager.getTask(id) != null) {
                 response = gson.toJson(taskManager.getTask(id));
                 responseCode = 200;
-            } catch (RuntimeException e) {
+            } else {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }

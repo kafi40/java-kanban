@@ -8,7 +8,6 @@ import task.EpicTask;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import static util.Parameters.ENCODING;
 
 public class EpicTaskHandler extends Handler implements HttpHandler {
@@ -29,20 +28,20 @@ public class EpicTaskHandler extends Handler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/epics/" + id)) {
-            try {
+            if (taskManager.getEpicTask(id) != null) {
                 response = gson.toJson(taskManager.getEpicTask(id));
                 responseCode = 200;
-            } catch (RuntimeException e) {
+            } else {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }
         }
 
         if (method.equals("GET") && path.equals("/epics/" + id + "/subtasks")) {
-            try {
+            if (taskManager.getEpicSubTasks(id) != null) {
                 response = gson.toJson(taskManager.getEpicSubTasks(id));
                 responseCode = 200;
-            } catch (RuntimeException e) {
+            } else {
                 response = "Задачи не существует!";
                 responseCode = 404;
             }

@@ -1,4 +1,1 @@
 id,type,name,description,status,epic,startTime,duration
-1,EPICTASK,new name,new description,NEW, ,15.04.2024 12:00,30
-3,SUBTASK,Name,Description,NEW,1,15.04.2024 12:00,30
-4,EPICTASK,Свадьба,Подготовка к свадьбе,NEW, , , 

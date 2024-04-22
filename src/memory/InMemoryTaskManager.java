@@ -53,7 +53,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<SubTask> getEpicSubTasks(int epicId) {
-        return epicTasks.get(epicId).getSubTasks().stream().toList();
+        Optional<EpicTask> optionalEpicTask = Optional.ofNullable(epicTasks.get(epicId));
+        return optionalEpicTask.map(epicTask -> epicTask.getSubTasks().stream().toList()).orElse(null);
     }
 
     @Override
@@ -80,20 +81,35 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        historyManager.add(tasks.get(id));
-        return tasks.get(id);
+        Optional<Task> optionalTask = Optional.ofNullable(tasks.get(id));
+        if (optionalTask.isPresent()) {
+            historyManager.add(tasks.get(id));
+            return optionalTask.get();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public EpicTask getEpicTask(int id) {
-        historyManager.add(epicTasks.get(id));
-        return epicTasks.get(id);
+        Optional<EpicTask> optionalEpicTask = Optional.ofNullable(epicTasks.get(id));
+        if (optionalEpicTask.isPresent()) {
+            historyManager.add(epicTasks.get(id));
+            return optionalEpicTask.get();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public SubTask getSubTask(int id) {
-        historyManager.add(subTasks.get(id));
-        return subTasks.get(id);
+        Optional<SubTask> optionalSubTask = Optional.ofNullable(subTasks.get(id));
+        if (optionalSubTask.isPresent()) {
+            historyManager.add(subTasks.get(id));
+            return optionalSubTask.get();
+        } else {
+            return null;
+        }
     }
 
     @Override
