@@ -4,10 +4,10 @@ import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
 import handlers.SubTaskHandler;
 import interfaces.TaskManager;
-import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
+import util.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -23,27 +23,10 @@ public class SubTaskHttpClientTest {
     public static HttpClient httpClient;
     public static HttpServer httpServer;
     public static TaskManager taskManager;
-    public static EpicTask epicTask;
-    public static SubTask subTask;
-    public static SubTask subTask1;
-
-    @BeforeAll
-    public static void beforeAll() {
-        taskManager = new InMemoryTaskManager();
-        epicTask = new EpicTask("Name", "Description");
-        taskManager.addEpicTask(epicTask);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask.setStartTime(LocalDateTime.parse("15.04.2024 01:00", DTF));
-        subTask.setDuration(Duration.ofMinutes(30));
-        subTask1 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask1.setStartTime(LocalDateTime.parse("15.04.2024 02:00", DTF));
-        subTask1.setDuration(Duration.ofMinutes(30));
-        taskManager.addSubTask(subTask);
-        taskManager.addSubTask(subTask1);
-    }
 
     @BeforeEach
     public void beforeEach() throws IOException {
+        taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
@@ -66,6 +49,10 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetSubTaskId() throws IOException, InterruptedException {
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/subtasks/" + subTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -94,6 +81,10 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteSubTaskId() throws IOException, InterruptedException {
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/subtasks/" + subTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
@@ -108,8 +99,10 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus201ForAddSubTaskId() throws IOException, InterruptedException {
-        String result = """
-                {"taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000 и без глупых конкурсов","taskStatus":"NEW","epicTaskId":1,"duration":30,"startTime":"05.06.2024 16:00"}""";
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        String result = "{\"taskName\":\"Найти Тамаду\",\"taskDescription\":\"Бюджет 50 000 и без глупых конкурсов\"," +
+                        "\"taskStatus\":\"NEW\",\"epicTaskId\":\"" + epicTask.getTaskId() + "\",\"duration\":30,\"startTime\":\"01.06.2024 16:00\"}";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -124,9 +117,13 @@ public class SubTaskHttpClientTest {
     }
 
     @Test
-    public void shouldGetStatus406ForAddTaskId() throws IOException, InterruptedException {
-        String result = """
-                {"taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000 и без глупых конкурсов","taskStatus":"NEW","epicTaskId":1,"duration":30,"startTime":"05.06.2024 01:00"}""";
+    public void shouldGetStatus406ForAddSubTaskId() throws IOException, InterruptedException {
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        subTask.setStartTime(LocalDateTime.parse("05.06.2024 23:00", DTF));
+        subTask.setDuration(Duration.ofMinutes(30));
+        String result = "{\"taskName\":\"Найти Тамаду\",\"taskDescription\":\"Бюджет 50 000 и без глупых конкурсов\"," +
+                        "\"taskStatus\":\"NEW\",\"epicTaskId\":" + epicTask.getTaskId() + ",\"duration\":30,\"startTime\":\"01.06.2024 16:00\"}";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -142,8 +139,12 @@ public class SubTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus201ForUpdateSubTask() throws IOException, InterruptedException {
-        String result = """
-                {"taskId":2, "taskName":"Найти Тамаду","taskDescription":"Бюджет 50 000","taskStatus":"NEW","epicTaskId":1,"duration":30,"startTime":"05.06.2024 04:00"}""";
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        taskManager.addSubTask(subTask);
+        String result = "{\"taskId\":" + subTask.getTaskId() + ", \"taskName\":\"Найти Тамаду\",\"taskDescription\":\"Бюджет 50 000\"," +
+                        "\"taskStatus\":\"NEW\",\"epicTaskId\":1,\"duration\":30,\"startTime\":\"05.06.2024 04:00\"}";
         URI uri = URI.create("http://localhost:8080/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -159,10 +160,5 @@ public class SubTaskHttpClientTest {
     @AfterEach
     public void afterEach() {
         httpServer.stop(0);
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

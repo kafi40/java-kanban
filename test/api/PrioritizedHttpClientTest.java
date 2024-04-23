@@ -2,13 +2,14 @@ package api;
 
 import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
-import handlers.PriortizedHandler;
+import handlers.TasksHandler;
 import interfaces.TaskManager;
-import memory.InMemoryTaskManager;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import task.Task;
+import util.Managers;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -25,29 +26,26 @@ public class PrioritizedHttpClientTest {
     public static HttpClient httpClient;
     public static TaskManager taskManager;
     public static HttpServer httpServer;
-    public static Task task;
-    public static Task task1;
 
-    @BeforeAll
-    public static void beforeAll() throws IOException {
-        taskManager = new InMemoryTaskManager();
+    @BeforeEach
+    public void beforeEach() throws IOException {
+        taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
-        httpServer.createContext("/priorized", new PriortizedHandler());
+        httpServer.createContext("/tasks", new TasksHandler());
         httpServer.start();
-        task = new Task("Name", "Description", TaskStatus.NEW);
-        task.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
+    }
+    @Test
+    public void shouldGetStatus200ForGetHistory() throws IOException, InterruptedException {
+        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        task.setStartTime(LocalDateTime.parse("15.09.2024 12:00", DTF));
         task.setDuration(Duration.ofMinutes(30));
-        task1 = new Task("Name", "Description", TaskStatus.NEW);
-        task1.setStartTime(LocalDateTime.parse("15.04.2024 14:00", DTF));
+        Task task1 = new Task("Name", "Description", TaskStatus.NEW);
+        task1.setStartTime(LocalDateTime.parse("15.09.2024 14:00", DTF));
         task1.setDuration(Duration.ofMinutes(30));
         taskManager.addTask(task);
         taskManager.addTask(task1);
-    }
-
-    @Test
-    public void shouldGetStatus200ForGetHistory() throws IOException, InterruptedException {
         URI uri = URI.create("http://localhost:8080/priorized");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -58,9 +56,9 @@ public class PrioritizedHttpClientTest {
         HttpResponse<String> response = httpClient.send(httpRequest, handler);
         assertEquals(200, response.statusCode(), "Ожидался код 200");
     }
-    @AfterAll
-    public static void afterAll() {
+
+    @AfterEach
+    public void afterEach() {
         httpServer.stop(0);
-        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

@@ -1,7 +1,5 @@
 package io;
 
-import memory.InMemoryTaskManager;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import java.io.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,9 +28,5 @@ public class FileBackedTaskManagerTest {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(""));
             bufferedReader.readLine();
         }, "Не корректно созданный экземпляр BufferedReader должен привести к исключению");
-    }
-    @AfterAll
-    public static void afterAll() {
-        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

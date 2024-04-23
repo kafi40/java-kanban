@@ -4,46 +4,26 @@ import com.sun.net.httpserver.HttpServer;
 import enums.TaskStatus;
 import handlers.EpicTaskHandler;
 import interfaces.TaskManager;
-import memory.InMemoryTaskManager;
 import org.junit.jupiter.api.*;
 import task.EpicTask;
 import task.SubTask;
+import util.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static util.Parameters.DTF;
 
 public class EpicTaskHttpClientTest {
-    public  HttpClient httpClient;
-    public  HttpServer httpServer;
-    public static TaskManager taskManager;
-    public static EpicTask epicTask;
-    public static EpicTask epicTask1;
-    public static SubTask subTask;
-
-    @BeforeAll
-    public static void beforeAll() {
-        taskManager = new InMemoryTaskManager();
-        epicTask = new EpicTask("Name", "Description");
-        epicTask1 = new EpicTask("Name", "Description");
-        taskManager.addEpicTask(epicTask);
-        taskManager.addEpicTask(epicTask1);
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask.setStartTime(LocalDateTime.parse("15.04.2024 05:00", DTF));
-        subTask.setDuration(Duration.ofMinutes(30));
-        taskManager.addSubTask(subTask);
-        epicTask.addSubTask(subTask);
-    }
+    public  static HttpClient httpClient;
+    public  static HttpServer httpServer;
+    public  static TaskManager taskManager;
 
     @BeforeEach
     public void beforeEach() throws IOException {
+        taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
@@ -66,6 +46,12 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTaskId() throws IOException, InterruptedException {
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        EpicTask epicTask1 = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        taskManager.addEpicTask(epicTask1);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -92,6 +78,10 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetEpicTasksSubTasks() throws IOException, InterruptedException {
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        taskManager.addSubTask(subTask);
         URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId() + "/subtasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -118,7 +108,9 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteEpicTaskId() throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/epics/" + epicTask1.getTaskId());
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        URI uri = URI.create("http://localhost:8080/epics/" + epicTask.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
                 .uri(uri)
@@ -148,8 +140,9 @@ public class EpicTaskHttpClientTest {
 
     @Test
     public void shouldGetStatus201ForUpdateEpicTask() throws IOException, InterruptedException {
-        String result = """
-                {"taskId":"1","taskName":"new name","taskDescription":"new description"}""";
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        taskManager.addEpicTask(epicTask);
+        String result = "{\"taskId\":\"" + epicTask.getTaskId() +"\",\"taskName\":\"new name\",\"taskDescription\":\"new description\"}";
         URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -165,10 +158,5 @@ public class EpicTaskHttpClientTest {
     @AfterEach
     public void afterEach() {
         httpServer.stop(0);
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

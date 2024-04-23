@@ -1,8 +1,6 @@
 package memory;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
@@ -15,25 +13,6 @@ import static util.Parameters.DTF;
 
 public class InMemoryTaskManagerTest {
     public static InMemoryTaskManager taskManager;
-    static public Task task;
-    static public EpicTask epicTask;
-    static public SubTask subTask;
-    static public SubTask subTask2;
-
-    @BeforeAll
-    public static void beforeAll() {
-        taskManager = (InMemoryTaskManager) Managers.getDefault();
-        task = new Task("Name", "Description", TaskStatus.NEW);
-        epicTask = new EpicTask("Name", "Description");
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        subTask2 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
-        epicTask.addSubTask(subTask);
-        epicTask.addSubTask(subTask2);
-        taskManager.getEpicTasks().put(epicTask.getTaskId(), epicTask);
-        taskManager.getSubTasks().put(subTask.getTaskId(), subTask);
-        taskManager.getSubTasks().put(subTask2.getTaskId(), subTask2);
-    }
-
     @Test
     public void canGetTaskManagerFromManagers() {
         assertNotNull(taskManager, "Менеджер задач не создался");
@@ -41,6 +20,16 @@ public class InMemoryTaskManagerTest {
 
     @Test
     public void canAddTasksInMaps() {
+        taskManager = new InMemoryTaskManager();
+        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        SubTask subTask2 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        epicTask.addSubTask(subTask);
+        epicTask.addSubTask(subTask2);
+        taskManager.getEpicTasks().put(epicTask.getTaskId(), epicTask);
+        taskManager.getSubTasks().put(subTask.getTaskId(), subTask);
+        taskManager.getSubTasks().put(subTask2.getTaskId(), subTask2);
         int taskId = task.getTaskId();
         taskManager.getTasks().put(taskId, task);
         int epicTaskId = epicTask.getTaskId();
@@ -54,6 +43,16 @@ public class InMemoryTaskManagerTest {
     }
     @Test
     public void shouldChanceEpicTaskStatus() {
+        taskManager = new InMemoryTaskManager();
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        SubTask subTask2 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        epicTask.addSubTask(subTask);
+        epicTask.addSubTask(subTask2);
+        taskManager.getEpicTasks().put(epicTask.getTaskId(), epicTask);
+        taskManager.getSubTasks().put(subTask.getTaskId(), subTask);
+        taskManager.getSubTasks().put(subTask2.getTaskId(), subTask2);
+
         assertEquals(epicTask.getTaskStatus(), TaskStatus.NEW, "Ожидался статус NEW");
 
         subTask.setTaskStatus(TaskStatus.IN_PROGRESS);
@@ -74,6 +73,15 @@ public class InMemoryTaskManagerTest {
 
     @Test
     public void shouldNotIntersectTime() {
+        taskManager = new InMemoryTaskManager();
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        SubTask subTask2 = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        epicTask.addSubTask(subTask);
+        epicTask.addSubTask(subTask2);
+        taskManager.getEpicTasks().put(epicTask.getTaskId(), epicTask);
+        taskManager.getSubTasks().put(subTask.getTaskId(), subTask);
+        taskManager.getSubTasks().put(subTask2.getTaskId(), subTask2);
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask.setDuration(Duration.ofMinutes(30));
         subTask2.setStartTime(LocalDateTime.parse("15.04.2024 12:20", DTF));
@@ -94,9 +102,5 @@ public class InMemoryTaskManagerTest {
 
         subTask.setStartTime(LocalDateTime.parse("15.04.2024 12:00", DTF));
         subTask2.setStartTime(LocalDateTime.parse("15.04.2024 12:30", DTF));
-    }
-    @AfterAll
-    public static void afterAll() {
-        InMemoryTaskManager.taskIdCounter = 0;
     }
 }

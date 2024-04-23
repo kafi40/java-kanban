@@ -81,10 +81,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        Optional<Task> optionalTask = Optional.ofNullable(tasks.get(id));
-        if (optionalTask.isPresent()) {
+        try {
+            System.out.println(tasks.get(id));
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        if (tasks.get(id) != null) {
             historyManager.add(tasks.get(id));
-            return optionalTask.get();
+            return tasks.get(id);
         } else {
             return null;
         }
@@ -92,10 +96,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public EpicTask getEpicTask(int id) {
-        Optional<EpicTask> optionalEpicTask = Optional.ofNullable(epicTasks.get(id));
-        if (optionalEpicTask.isPresent()) {
+        if (epicTasks.get(id) != null) {
             historyManager.add(epicTasks.get(id));
-            return optionalEpicTask.get();
+            return epicTasks.get(id);
         } else {
             return null;
         }
@@ -103,10 +106,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public SubTask getSubTask(int id) {
-        Optional<SubTask> optionalSubTask = Optional.ofNullable(subTasks.get(id));
-        if (optionalSubTask.isPresent()) {
+        if (subTasks.get(id) != null) {
             historyManager.add(subTasks.get(id));
-            return optionalSubTask.get();
+            return subTasks.get(id);
         } else {
             return null;
         }
@@ -261,38 +263,38 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     public boolean isTimeIntersection(Task task) {
-        Duration duration;
-        LocalDateTime startTime;
-        LocalDateTime endTime;
-        Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(task.getStartTime());
-        Optional<Duration> optionalDuration = Optional.ofNullable(task.getDuration());
-        if (optionalStartTime.isEmpty()) {
-            return false;
-        }
-        if (optionalDuration.isPresent()) {
-            startTime = optionalStartTime.get();
-            duration = optionalDuration.get();
-            endTime = startTime.plus(duration);
-            for (Task t : tasks.values()) {
-                if (task.getTaskId().equals(t.getTaskId())) {
-                    continue;
-                }
-                if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
-                        || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                    return true;
-                }
+            Duration duration;
+            LocalDateTime startTime;
+            LocalDateTime endTime;
+            Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(task.getStartTime());
+            Optional<Duration> optionalDuration = Optional.ofNullable(task.getDuration());
+            if (optionalStartTime.isEmpty()) {
+                return false;
             }
+            if (optionalDuration.isPresent()) {
+                startTime = optionalStartTime.get();
+                duration = optionalDuration.get();
+                endTime = startTime.plus(duration);
+                for (Task t : tasks.values()) {
+                    if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
+                        continue;
+                    }
+                    if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+                        || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
+                        return true;
+                    }
+                }
 
-            for (SubTask t : subTasks.values()) {
-                if (task.getTaskId().equals(t.getTaskId())) {
-                    continue;
-                }
-                if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+                for (SubTask t : subTasks.values()) {
+                    if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
+                        continue;
+                    }
+                    if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
                         || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                    return true;
+                        return true;
+                    }
                 }
             }
-        }
-        return false;
+            return false;
     }
 }
