@@ -23,10 +23,13 @@ public class TaskHttpClientTest {
     public static TaskManager taskManager;
     public static HttpServer httpServer;
 
+    @BeforeAll
+    public static void beforeAll() {
+        taskManager = Managers.getManagerBacked();
+    }
 
     @BeforeEach
     public void beforeEach() throws IOException {
-        taskManager = Managers.getManagerBacked();
         httpClient = HttpClient.newHttpClient();
         httpServer = HttpServer.create();
         httpServer.bind(new InetSocketAddress(8080), 0);
@@ -48,9 +51,8 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForGetTaskId() throws IOException, InterruptedException {
-        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        Task task = new Task("shouldGetStatus200ForGetTaskId", "shouldGetStatus200ForGetTaskId", TaskStatus.NEW);
         taskManager.addTask(task);
-        System.out.println(task.getTaskId());
         URI uri = URI.create("http://localhost:8080/tasks/" + task.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
@@ -77,7 +79,7 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus200ForDeleteTaskId() throws IOException, InterruptedException {
-        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        Task task = new Task("shouldGetStatus200ForDeleteTaskId", "shouldGetStatus200ForDeleteTaskId", TaskStatus.NEW);
         taskManager.addTask(task);
         URI uri = URI.create("http://localhost:8080/tasks/" + task.getTaskId());
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -92,8 +94,8 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus201ForAddTaskId() throws IOException, InterruptedException {
-        String result = """
-                {"taskName":"Игра на гитаре","taskDescription":"Выучить новые аккорды","taskStatus":"NEW","duration":60,"startTime":"11.06.2024 22:00"}""";
+        String result = "{\"taskName\":\"shouldGetStatus201ForAddTaskId\",\"taskDescription\":\"shouldGetStatus201ForAddTaskId\"," +
+                        "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"11.06.2024 22:00\"}";
         URI uri = URI.create("http://localhost:8080/tasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -109,12 +111,12 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus406ForAddTaskId() throws IOException, InterruptedException {
-        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        Task task = new Task("shouldGetStatus406ForAddTaskId", "shouldGetStatus406ForAddTaskId", TaskStatus.NEW);
         task.setStartTime(LocalDateTime.parse("05.06.2024 23:00", DTF));
         task.setDuration(Duration.ofMinutes(30));
         taskManager.addTask(task);
-        String result = """
-                {"taskName":"Игра на гитаре","taskDescription":"Выучить новые аккорды","taskStatus":"NEW","duration":60,"startTime":"05.06.2024 23:00"}""";
+        String result = "{\"taskName\":\"Try shouldGetStatus406ForAddTaskId\",\"taskDescription\":\"Try shouldGetStatus406ForAddTaskId\"," +
+                        "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"05.06.2024 23:00\"}";
         URI uri = URI.create("http://localhost:8080/tasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)
@@ -130,10 +132,11 @@ public class TaskHttpClientTest {
 
     @Test
     public void shouldGetStatus201ForUpdateTask() throws IOException, InterruptedException {
-        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        Task task = new Task("shouldGetStatus201ForUpdateTask", "shouldGetStatus201ForUpdateTask", TaskStatus.NEW);
         taskManager.addTask(task);
-        String result = "{\"taskId\":" + task.getTaskId() +",\"taskName\":\"new name\",\"taskDescription\":\"new description\"," +
-                        "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"05.06.2024 01:00\"}";
+        String result = "{\"taskId\":" + task.getTaskId() +",\"taskName\":\"update shouldGetStatus201ForUpdateTask\"," +
+                "\"taskDescription\":\"update shouldGetStatus201ForUpdateTask\"," +
+                "\"taskStatus\":\"NEW\",\"duration\":60,\"startTime\":\"05.06.2024 01:00\"}";
         URI uri = URI.create("http://localhost:8080/tasks");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(uri)

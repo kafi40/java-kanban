@@ -11,6 +11,7 @@ import deserializers.TaskDeserializer;
 import interfaces.TaskManager;
 import serializers.EpicTaskSerializer;
 import serializers.SubTaskSerializer;
+import serializers.TaskSerializer;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
@@ -33,6 +34,7 @@ public abstract class Handler implements HttpHandler {
                 .serializeNulls()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .registerTypeAdapter(Duration.class, new DurationAdapter())
+                .registerTypeAdapter(Task.class, new TaskSerializer())
                 .registerTypeAdapter(EpicTask.class, new EpicTaskSerializer())
                 .registerTypeAdapter(SubTask.class, new SubTaskSerializer())
                 .registerTypeAdapter(Task.class, new TaskDeserializer())

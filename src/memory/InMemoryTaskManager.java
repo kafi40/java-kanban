@@ -81,11 +81,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTask(int id) {
-        try {
-            System.out.println(tasks.get(id));
-        } catch (Exception e) {
-            System.out.println(e);
-        }
         if (tasks.get(id) != null) {
             historyManager.add(tasks.get(id));
             return tasks.get(id);
@@ -263,38 +258,38 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     public boolean isTimeIntersection(Task task) {
-            Duration duration;
-            LocalDateTime startTime;
-            LocalDateTime endTime;
-            Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(task.getStartTime());
-            Optional<Duration> optionalDuration = Optional.ofNullable(task.getDuration());
-            if (optionalStartTime.isEmpty()) {
-                return false;
-            }
-            if (optionalDuration.isPresent()) {
-                startTime = optionalStartTime.get();
-                duration = optionalDuration.get();
-                endTime = startTime.plus(duration);
-                for (Task t : tasks.values()) {
-                    if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
-                        continue;
-                    }
-                    if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
-                        || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                        return true;
-                    }
+        Duration duration;
+        LocalDateTime startTime;
+        LocalDateTime endTime;
+        Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(task.getStartTime());
+        Optional<Duration> optionalDuration = Optional.ofNullable(task.getDuration());
+        if (optionalStartTime.isEmpty()) {
+            return false;
+        }
+        if (optionalDuration.isPresent()) {
+            startTime = optionalStartTime.get();
+            duration = optionalDuration.get();
+            endTime = startTime.plus(duration);
+            for (Task t : tasks.values()) {
+                if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
+                    continue;
                 }
+                if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+                        || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
+                    return true;
+                }
+            }
 
-                for (SubTask t : subTasks.values()) {
-                    if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
-                        continue;
-                    }
-                    if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+            for (SubTask t : subTasks.values()) {
+                if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
+                    continue;
+                }
+                if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
                         || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                        return true;
-                    }
+                    return true;
                 }
             }
+        }
             return false;
     }
 }

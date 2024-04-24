@@ -5,13 +5,14 @@ import interfaces.TaskManager;
 import io.FileBackedTaskManager;
 import memory.InMemoryHistoryManager;
 import memory.InMemoryTaskManager;
+
 import static util.Parameters.FILE;
 
 
 public class Managers {
     private static final InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
     private static final InMemoryHistoryManager inMemoryHistoryManager  = new InMemoryHistoryManager();
-    private static FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(FILE);
+    private static final FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(FILE);
 
     public static TaskManager getDefault() {
         return inMemoryTaskManager;
@@ -24,5 +25,4 @@ public class Managers {
     public static TaskManager getManagerBacked() {
         return fileBackedTaskManager;
     }
-
 }
