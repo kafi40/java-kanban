@@ -1,33 +1,57 @@
 package interfaces;
 
+import exceptions.TimeIntersectionException;
 import task.EpicTask;
+import task.SubTask;
 import task.Task;
-import enums.TaskStatus;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.TreeSet;
 
 public interface TaskManager {
+    HashMap<Integer, Task> getTasks();
 
-    TaskStatus setTaskStatus(int command);
+    HashMap<Integer, EpicTask>  getEpicTasks();
 
-    void setEpicTaskStatus(EpicTask epicTask);
+    HashMap<Integer, SubTask>  getSubTasks();
 
-    void showTask(Task task);
+    List<SubTask> getEpicSubTasks(int epicId);
 
-    void addTask(int command) throws IOException;
+    void deleteTasks();
 
-    void clearTasks(int command);
+    void deleteEpicTasks();
 
-    void findTaskById(int taskId) throws IOException;
+    void deleteSubTasks();
 
-    void deleteTaskById(int taskId);
+    Task getTask(int id);
 
-    void showTasks(int command);
+    EpicTask getEpicTask(int id);
 
-    void editTaskById(int taskId);
+    SubTask getSubTask(int id);
 
-    void getHistory();
+    void addTask(Task task);
+
+    void addEpicTask(EpicTask epicTask);
+
+    void addSubTask(SubTask subTask);
+
+    void updateTask(Task task);
+
+    void updateEpicTask(EpicTask epicTask);
+
+    void updateSubTask(SubTask subTask);
+
+    void deleteTask(int id);
+
+    void deleteEpicTask(int id);
+
+    void deleteSubTask(int id);
+
+    List<Task> getHistory();
 
     TreeSet<Task> getPrioritizedTasks();
+
+    boolean isTimeIntersection(Task task) throws TimeIntersectionException;
+
 }

@@ -1,60 +1,57 @@
 package memory;
 
 import enums.TaskStatus;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
-import util.Managers;
-
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryTaskHistoryTest {
 
     public static InMemoryTaskManager taskManager;
-    public static InMemoryTaskHistory taskHistory;
-    static public Task task;
-    static public EpicTask epicTask;
-    static public SubTask subTask;
+    public static InMemoryHistoryManager historyManager;
     public List tasksList;
 
-    @BeforeAll
-    public static void beforeAll() {
-        taskManager = (InMemoryTaskManager) Managers.getDefault();
-        taskHistory = new InMemoryTaskHistory();
-        task = new Task("Name", "Description", TaskStatus.NEW);
-        epicTask = new EpicTask("Name", "Description");
-        subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask);
+    @BeforeEach
+    public void beforeEach() {
+        taskManager = new InMemoryTaskManager();
+        historyManager = new InMemoryHistoryManager();
     }
 
-    @BeforeEach
+    @Test
     public void shouldAddTasksInHistory() {
-        taskHistory.addTaskInHistory(task);
-        tasksList = taskHistory.getHistory();
+        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
+        historyManager.add(task);
+        tasksList = historyManager.getHistory();
         assertEquals(1, tasksList.size(), "Ожидается 1 элемент");
-        taskHistory.addTaskInHistory(epicTask);
-        tasksList = taskHistory.getHistory();
+        historyManager.add(epicTask);
+        tasksList = historyManager.getHistory();
         assertEquals(2, tasksList.size(), "Ожидается 2 элемента");
-        taskHistory.addTaskInHistory(subTask);
-        tasksList = taskHistory.getHistory();
+        historyManager.add(subTask);
+        tasksList = historyManager.getHistory();
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
     }
 
     @Test
     public void shouldNotRepeatTaskInTaskHistory() {
-        Task task1 = task;
-        EpicTask epicTask1 = epicTask;
-        SubTask subTask1 = subTask;
+        Task task = new Task("Name", "Description", TaskStatus.NEW);
+        EpicTask epicTask = new EpicTask("Name", "Description");
+        SubTask subTask = new SubTask("Name", "Description", TaskStatus.NEW, epicTask.getTaskId());
 
+        historyManager.add(task);
+        historyManager.add(epicTask);
+        historyManager.add(subTask);
+        tasksList = historyManager.getHistory();
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
-        taskHistory.addTaskInHistory(task1);
-        taskHistory.addTaskInHistory(epicTask1);
-        taskHistory.addTaskInHistory(subTask1);
-        tasksList = taskHistory.getHistory();
+        historyManager.add(task);
+        historyManager.add(epicTask);
+        historyManager.add(subTask);
+        tasksList = historyManager.getHistory();
         assertEquals(3, tasksList.size(), "Ожидается 3 элемента");
     }
 }

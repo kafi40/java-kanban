@@ -1,32 +1,25 @@
 package memory;
 
 import enums.TaskStatus;
-import interfaces.TaskHistory;
+import interfaces.HistoryManager;
 import interfaces.TaskManager;
-import io.FileBackedTaskManager;
 import task.EpicTask;
 import task.SubTask;
 import task.Task;
-import util.UserInterface;
-import util.Utils;
-
-import java.io.IOException;
+import util.Managers;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static util.Parameters.*;
-
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> allTypeTasks = new HashMap<>();
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
-    private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
-    private final TreeSet<Task> taskTreeSet;
+    protected final HistoryManager historyManager = Managers.getDefaultHistory();
+    protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    protected final HashMap<Integer, EpicTask> epicTasks = new HashMap<>();
+    protected final HashMap<Integer, SubTask> subTasks = new HashMap<>();
+    protected final TreeSet<Task> taskTreeSet;
     private boolean isSorted = false;
     public static int taskIdCounter = 0;
-    private final TaskHistory taskHistory = new InMemoryTaskHistory();
 
     public InMemoryTaskManager() {
         taskTreeSet = new TreeSet<>((o1, o2) -> {
@@ -38,41 +31,182 @@ public class InMemoryTaskManager implements TaskManager {
         });
     }
 
-    public HashMap<Integer, Task> getAllTypeTasks() {
-        return allTypeTasks;
+    public static int taskIdGenerator() {
+        taskIdCounter = taskIdCounter + 1;
+        return taskIdCounter;
     }
 
+    @Override
     public HashMap<Integer, Task> getTasks() {
         return tasks;
     }
 
+    @Override
     public HashMap<Integer, EpicTask> getEpicTasks() {
         return epicTasks;
     }
 
+    @Override
     public HashMap<Integer, SubTask> getSubTasks() {
         return subTasks;
     }
 
-    public TaskHistory getTaskHistory() {
-        return taskHistory;
-    }
-
-    public static int taskIdGenerator() {
-       taskIdCounter = taskIdCounter + 1;
-       return taskIdCounter;
+    @Override
+    public List<SubTask> getEpicSubTasks(int epicId) {
+        Optional<EpicTask> optionalEpicTask = Optional.ofNullable(epicTasks.get(epicId));
+        return optionalEpicTask.map(epicTask -> epicTask.getSubTasks().stream().toList()).orElse(null);
     }
 
     @Override
-    public TaskStatus setTaskStatus(int command) {
-        return switch (command) {
-            case 2 -> TaskStatus.IN_PROGRESS;
-            case 3 -> TaskStatus.DONE;
-            default -> TaskStatus.NEW;
-        };
+    public void deleteTasks() {
+        tasks.clear();
+        isSorted = false;
     }
 
     @Override
+    public void deleteEpicTasks() {
+        epicTasks.values().forEach(epicTask
+                -> epicTask.getSubTasks().forEach(subTask
+                -> deleteSubTask(subTask.getTaskId())));
+        epicTasks.clear();
+        isSorted = false;
+    }
+
+    @Override
+    public void deleteSubTasks() {
+        epicTasks.values().forEach(epicTask -> getSubTasks().clear());
+        subTasks.clear();
+        isSorted = false;
+    }
+
+    @Override
+    public Task getTask(int id) {
+        if (tasks.get(id) != null) {
+            historyManager.add(tasks.get(id));
+            return tasks.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public EpicTask getEpicTask(int id) {
+        if (epicTasks.get(id) != null) {
+            historyManager.add(epicTasks.get(id));
+            return epicTasks.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public SubTask getSubTask(int id) {
+        if (subTasks.get(id) != null) {
+            historyManager.add(subTasks.get(id));
+            return subTasks.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public void addTask(Task task) {
+        tasks.put(task.getTaskId(), task);
+        isSorted = false;
+    }
+
+    @Override
+    public void addEpicTask(EpicTask epicTask) {
+        epicTasks.put(epicTask.getTaskId(), epicTask);
+        isSorted = false;
+    }
+
+    @Override
+    public void addSubTask(SubTask subTask) {
+        subTasks.put(subTask.getTaskId(), subTask);
+        EpicTask epicTask = epicTasks.get(subTask.getEpicTaskId());
+        epicTask.addSubTask(subTask);
+        setEpicTaskStatus(epicTasks.get(subTask.getEpicTaskId()));
+        setEpicTaskDateTime(epicTasks.get(subTask.getEpicTaskId()));
+        isSorted = false;
+    }
+
+    @Override
+    public void updateTask(Task task) {
+        tasks.put(task.getTaskId(), task);
+        isSorted = false;
+    }
+
+    @Override
+    public void updateEpicTask(EpicTask epicTask) {
+        epicTasks.put(epicTask.getTaskId(), epicTask);
+        subTasks.values().forEach(subTask -> {
+            if (subTask.getEpicTaskId() == epicTask.getTaskId()) {
+                epicTask.addSubTask(subTask);
+            }
+        });
+        setEpicTaskDateTime(epicTask);
+        isSorted = false;
+    }
+
+    @Override
+    public void updateSubTask(SubTask subTask) {
+        EpicTask epicTask = epicTasks.get(subTask.getEpicTaskId());
+        epicTask.getSubTasks().remove(subTask);
+        subTasks.put(subTask.getTaskId(), subTask);
+        epicTask.addSubTask(subTask);
+        setEpicTaskStatus(epicTasks.get(subTask.getEpicTaskId()));
+        setEpicTaskDateTime(epicTasks.get(subTask.getEpicTaskId()));
+        isSorted = false;
+    }
+
+    @Override
+    public void deleteTask(int id) {
+        tasks.remove(id);
+        isSorted = false;
+    }
+
+    @Override
+    public void deleteEpicTask(int id) {
+        subTasks.values().forEach(subTask -> {
+            if (subTask.getEpicTaskId() == id) {
+                subTasks.remove(subTask.getTaskId());
+            }
+        });
+        epicTasks.remove(id);
+        isSorted = false;
+    }
+
+    @Override
+    public void deleteSubTask(int id) {
+        EpicTask epicTask = epicTasks.get(subTasks.get(id).getEpicTaskId());
+        epicTask.getSubTasks().remove(subTasks.get(id));
+        subTasks.remove(id);
+        setEpicTaskDateTime(epicTask);
+        isSorted = false;
+    }
+
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
+    }
+
+    @Override
+    public TreeSet<Task> getPrioritizedTasks() {
+        if (!isSorted) {
+            taskTreeSet.clear();
+            List<Task> taskList = new ArrayList<>(tasks.values());
+            taskList.addAll(subTasks.values());
+
+            Set<Task> taskSet = taskList.stream()
+                    .filter(task -> task.getStartTime() != null)
+                    .collect(Collectors.toSet());
+            taskTreeSet.addAll(taskSet);
+            isSorted = true;
+        }
+        return taskTreeSet;
+    }
+
     public void setEpicTaskStatus(EpicTask epicTask) {
         boolean isNewTaskFlag = false;
         boolean isDoneTaskFlag = false;
@@ -106,389 +240,56 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    @Override
-    public void showTask(Task task) {
-        String taskStatus;
-        String epicTask;
+    public void setEpicTaskDateTime(EpicTask epicTask) {
+        Optional<SubTask> optionalStartTime = epicTask.getSubTasks().stream()
+                .filter(subTask -> subTask.getStartTime() != null)
+                .min(Comparator.comparing(Task::getStartTime));
+        epicTask.setStartTime(optionalStartTime.map(Task::getStartTime).orElse(null));
 
-        if (task.getClass() == SubTask.class) {
-            epicTask = ((SubTask) task).getEpicTask().getTaskName();
+        epicTask.getSubTasks().stream()
+                .filter(subTask -> subTask.getStartTime() != null)
+                .max(Comparator.comparing(Task::getEndTime))
+                .ifPresent(subTask -> epicTask.setEndTime(subTask.getEndTime()));
+        if (epicTask.getStartTime() != null && epicTask.getEndTime() != null) {
+            epicTask.setDuration(Duration.between(epicTask.getStartTime(), epicTask.getEndTime()));
         } else {
-            epicTask = " ";
-        }
-        taskStatus = switch (task.getTaskStatus()) {
-            case NEW -> "Новая";
-            case IN_PROGRESS -> "В процессе";
-            case DONE -> "Выполнена";
-        };
-        System.out.printf("%-10d %-30s %-30s %-15s %-30s %-20s %-20s\n",
-                task.getTaskId(),
-                task.getTaskName(),
-                task.getTaskDescription(),
-                taskStatus,
-                epicTask,
-                Optional.ofNullable(task.getStartTime()).map(localDateTime ->
-                        localDateTime.format(DTF)).orElse(""),
-                Optional.ofNullable(task.getEndTime()).map(localDateTime ->
-                        localDateTime.format(DTF)).orElse("")
-        );
-    }
-
-    @Override
-    public void addTask(int command) throws IOException {
-        Scanner scanner = new Scanner(System.in);
-        String taskName;
-        String taskDescription;
-        TaskStatus taskStatus;
-
-        System.out.print("Введите название: ");
-        taskName = scanner.nextLine();
-        if (taskName.equals("0")) return;
-        System.out.print("Введите описание: ");
-        taskDescription = scanner.nextLine();
-        if (taskDescription.equals("0")) return;
-        switch (command) {
-            case 1:
-
-                UserInterface.statusMenuPrint();
-                System.out.print("Выберите статус задачи: ");
-                command = Utils.checkCommand(TASK_STATUS_COMMAND_COUNT);
-                if (command == 0) return;
-                taskStatus = setTaskStatus(command);
-                Task task = new Task(taskName, taskDescription, taskStatus);
-                checkAndSetTime(task);
-                tasks.put(task.getTaskId(), task);
-                allTypeTasks.put(task.getTaskId(), task);
-                new FileBackedTaskManager().save(task, TASK_BACKUP_PATH);
-                break;
-
-            case 2:
-                EpicTask epicTask = new EpicTask(taskName, taskDescription);
-                epicTasks.put(epicTask.getTaskId(), epicTask);
-                allTypeTasks.put(epicTask.getTaskId(), epicTask);
-                new FileBackedTaskManager().save(epicTask, TASK_BACKUP_PATH);
-                break;
-
-            case 3:
-                UserInterface.statusMenuPrint();
-                System.out.print("Выберите статус задачи: ");
-                command = Utils.checkCommand(TASK_STATUS_COMMAND_COUNT);
-                if (command == 0) return;
-                taskStatus = setTaskStatus(command);
-                int i = 0;
-                ArrayList<Integer> epicTasksIdList = new ArrayList<>();
-                for (Task t: epicTasks.values()) {
-                    i++;
-                    epicTasksIdList.add(t.getTaskId());
-                    System.out.println(i + " - " + t.getTaskName());
-                }
-                System.out.print("Выберите основную задачу: ");
-                command =  Utils.checkCommand(epicTasksIdList.size() + 1);
-                if (command == 0) return;
-                int mainEpicTaskId = epicTasksIdList.get(command - 1);
-                SubTask subTask = new SubTask(taskName, taskDescription, taskStatus, epicTasks.get(mainEpicTaskId));
-                checkAndSetTime(subTask);
-                subTasks.put(subTask.getTaskId(), subTask);
-                epicTasks.get(mainEpicTaskId).addSubTask(subTask);
-                allTypeTasks.put(subTask.getTaskId(), subTask);
-                new FileBackedTaskManager().save(subTask, TASK_BACKUP_PATH);
-        }
-        isSorted = false;
-        System.out.println("Задача добавлена!");
-    }
-
-    @Override
-    public void clearTasks(int command) {
-        switch (command) {
-            case 1:
-                tasks.clear();
-                epicTasks.clear();
-                subTasks.clear();
-                allTypeTasks.clear();
-                isSorted = false;
-                break;
-
-            case 2:
-                tasks.clear();
-                isSorted = false;
-                break;
-
-            case 3:
-                epicTasks.clear();
-                subTasks.clear();
-                isSorted = false;
-                break;
-
-            case 4:
-                subTasks.clear();
-                isSorted = false;
-                break;
-
-            case 0:
-                break;
+            epicTask.setDuration(Duration.ofMinutes(0));
         }
     }
 
-    @Override
-    public void findTaskById(int taskId) throws IOException {
-        Scanner scanner = new Scanner(System.in);
-
-        if (taskId == 0) return;
-        Task task;
-        if (tasks.get(taskId) != null) {
-            task = tasks.get(taskId);
-        } else if (epicTasks.get(taskId) != null) {
-            task = epicTasks.get(taskId);
-        } else if (subTasks.get(taskId) != null) {
-            task = subTasks.get(taskId);
-        } else {
-            System.out.println("Такой задачи нет!");
-            return;
-        }
-        UserInterface.tasksHeaderPrint();
-        showTask(task);
-        taskHistory.addTaskInHistory(task);
-        new FileBackedTaskManager().save(task, TASK_HISTORY_BACKUP_PATH);
-        System.out.print("Нажмите Enter чтобы продолжить...");
-        scanner.nextLine();
-    }
-
-    @Override
-    public void deleteTaskById(int taskId) {
-        allTypeTasks.remove(taskId);
-        if (tasks.get(taskId) != null) {
-            tasks.remove(taskId);
-        } else if (epicTasks.get(taskId) != null) {
-            epicTasks.get(taskId).removeSubTask();
-            epicTasks.remove(taskId);
-        } else if (subTasks.get(taskId) != null) {
-            subTasks.remove(taskId);
-        } else {
-            System.out.println("Такой задачи нет!");
-            return;
-        }
-        isSorted = false;
-        System.out.println("Задача удалена!");
-    }
-
-    @Override
-    public void showTasks(int command) {
-
-        Scanner scanner = new Scanner(System.in);
-
-        switch (command) {
-            case 1:
-                UserInterface.tasksHeaderPrint();
-                tasks.values().forEach(this::showTask);
-                epicTasks.values().forEach(et -> {
-                    showTask(et);
-                    et.getSubTasks().forEach(this::showTask);
-                });
-                break;
-
-            case 2:
-                UserInterface.tasksHeaderPrint();
-                tasks.values().forEach(this::showTask);
-                break;
-
-            case 3:
-                UserInterface.tasksHeaderPrint();
-                epicTasks.values().forEach(this::showTask);
-                break;
-
-            case 4:
-                UserInterface.tasksHeaderPrint();
-                subTasks.values().forEach(this::showTask);
-                break;
-            case 5:
-                UserInterface.tasksHeaderPrint();
-                getPrioritizedTasks().forEach(this::showTask);
-                break;
-
-            case 0:
-                return;
-        }
-        System.out.print("Нажмите Enter чтобы продолжить...");
-        scanner.nextLine();
-    }
-
-    @Override
-    public void editTaskById(int taskId) {
-        Scanner scanner = new Scanner(System.in);
-        String taskName;
-        String taskDescription;
-        TaskStatus taskStatus;
-        int command;
-
-        System.out.print("Введите название: ");
-        taskName = scanner.nextLine();
-        if (taskName.equals("0"))
-            return;
-        System.out.print("Введите описание: ");
-        taskDescription = scanner.nextLine();
-        if (taskDescription.equals("0"))
-            return;
-        if (epicTasks.get(taskId) == null) {
-            UserInterface.statusMenuPrint();
-            System.out.print("Выберите статус задачи: ");
-            command = Utils.checkCommand(TASK_STATUS_COMMAND_COUNT);
-            if (command == 0)
-                return;
-            taskStatus = setTaskStatus(command);
-        } else {
-            taskStatus = setTaskStatus(1);
-        }
-        Task task;
-        if (tasks.get(taskId) != null) {
-            task = tasks.get(taskId);
-            task.setTaskStatus(taskStatus);
-            checkAndSetTime(task);
-        } else if (epicTasks.get(taskId) != null) {
-            task = epicTasks.get(taskId);
-        } else if (subTasks.get(taskId) != null) {
-            task = subTasks.get(taskId);
-            task.setTaskStatus(taskStatus);
-            checkAndSetTime(task);
-        } else {
-            System.out.println("Такой задачи нет!");
-            return;
-        }
-        task.setTaskName(taskName);
-        task.setTaskDescription(taskDescription);
-        isSorted = false;
-        System.out.println("Задача отредактирована");
-    }
-
-    @Override
-    public  void getHistory() {
-        Scanner scanner = new Scanner(System.in);
-        List<Task> tempList =  taskHistory.getHistory();
-
-        tempList.forEach(this::showTask);
-        System.out.print("Нажмите Enter чтобы продолжить...");
-        scanner.nextLine();
-    }
-
-    @Override
-    public TreeSet<Task> getPrioritizedTasks() {
-        if (!isSorted) {
-            taskTreeSet.clear();
-            Set<Task> taskSet = allTypeTasks.values().stream()
-                    .filter(task -> task.getClass() != EpicTask.class)
-                    .filter(task -> task.getStartTime() != null)
-                    .collect(Collectors.toSet());
-            taskTreeSet.addAll(taskSet);
-            isSorted = true;
-        }
-        return taskTreeSet;
-    }
-
-    public void checkAndSetTime(Task task) {
-        boolean isTimeIntersection = true;
+    public boolean isTimeIntersection(Task task) {
         Duration duration;
         LocalDateTime startTime;
         LocalDateTime endTime;
-
-        OUTER:
-        while (isTimeIntersection && task.getClass() != EpicTask.class) {
-            System.out.println("Enter - пропустить");
-            System.out.println("Установите дату и время начала задачи в формате ДД.ММ.ГГГГ ЧЧ:MM");
-            Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(Utils.localDateTimeFormatter());
-            if (optionalStartTime.isEmpty()) {
-                return;
-            }
-            System.out.print("Введите продолжительность задачи в минутах: ");
-            Optional<Integer> optionalDuration = Utils.checkDuration();
-            if (optionalDuration.isPresent()) {
-                startTime = optionalStartTime.get();
-                duration = Duration.ofMinutes(optionalDuration.get());
-                endTime = startTime.plus(duration);
-                for (Task t : taskTreeSet) {
-                    if (task.getTaskId().equals(t.getTaskId())) {
-                        continue;
-                    }
-                    if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
-                            || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
-                        System.out.println("На это время уже есть задача");
-                        continue OUTER;
-                    }
-                }
-                task.setStartTime(startTime);
-                task.setDuration(duration);
-            }
-            isTimeIntersection = false;
+        Optional<LocalDateTime> optionalStartTime = Optional.ofNullable(task.getStartTime());
+        Optional<Duration> optionalDuration = Optional.ofNullable(task.getDuration());
+        if (optionalStartTime.isEmpty()) {
+            return false;
         }
-    }
-
-    public void createTasksScript() throws IOException {
-        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
-        Task task = new Task("Сходить в магазин", "Купить хлеб", TaskStatus.NEW);
-        task.setStartTime(LocalDateTime.now());
-        task.setDuration(Duration.ofMinutes(60));
-        fileBackedTaskManager.save(task, TASK_BACKUP_PATH);
-
-        Task task2 = new Task("Купить билеты в кино", "Сеанс в субботу", TaskStatus.IN_PROGRESS);
-        task2.setStartTime(LocalDateTime.now().plusMinutes(60));
-        task2.setDuration(Duration.ofMinutes(30));
-        fileBackedTaskManager.save(task2, TASK_BACKUP_PATH);
-
-        EpicTask epicTask = new EpicTask("Организовать день рождения", "Успеть до мая");
-        fileBackedTaskManager.save(epicTask, TASK_BACKUP_PATH);
-
-        SubTask subTask = new SubTask("Не отображается", "Неизвестно почему", TaskStatus.NEW, epicTask);
-        subTask.setStartTime(LocalDateTime.now().plusMinutes(120));
-        subTask.setDuration(Duration.ofMinutes(50));
-        fileBackedTaskManager.save(subTask, TASK_BACKUP_PATH);
-
-        SubTask subTask1 = new SubTask("Выбрать ресторан", "Кристалл", TaskStatus.NEW, epicTask);
-        subTask1.setStartTime(LocalDateTime.now().plusMinutes(180));
-        subTask1.setDuration(Duration.ofMinutes(40));
-        fileBackedTaskManager.save(subTask1, TASK_BACKUP_PATH);
-
-        SubTask subTask2 = new SubTask("Купить украшения", "Шарики декор",
-                TaskStatus.NEW, epicTask);
-        subTask2.setStartTime(LocalDateTime.now().plusMinutes(240));
-        subTask2.setDuration(Duration.ofMinutes(120));
-        fileBackedTaskManager.save(subTask2, TASK_BACKUP_PATH);
-
-        SubTask subTask3 = new SubTask("Список гостей", "Не определен", TaskStatus.NEW, epicTask);
-        subTask3.setStartTime(LocalDateTime.now().plusMinutes(300));
-        subTask3.setDuration(Duration.ofMinutes(10));
-        fileBackedTaskManager.save(subTask3, TASK_BACKUP_PATH);
-
-        SubTask subTask4 = new SubTask("Список блюд", "Больше мяса", TaskStatus.NEW, epicTask);
-        fileBackedTaskManager.save(subTask4, TASK_BACKUP_PATH);
-
-        epicTask.addSubTask(subTask);
-        epicTask.addSubTask(subTask1);
-        epicTask.addSubTask(subTask2);
-        epicTask.addSubTask(subTask3);
-        epicTask.addSubTask(subTask4);
-
-        EpicTask epicTask2 = new EpicTask("Стать разработчиком", "До конца года");
-        fileBackedTaskManager.save(epicTask2, TASK_BACKUP_PATH);
-
-        SubTask subTask5 = new SubTask("Изучить Java Core", "Прочесть книгу",
-                TaskStatus.NEW, epicTask2);
-        fileBackedTaskManager.save(subTask5, TASK_BACKUP_PATH);
-
-        epicTask2.addSubTask(subTask5);
-
-        List<Task> listScript = Arrays.asList(task, task2, epicTask, subTask, subTask1, subTask2, subTask3, subTask4,
-                epicTask2, subTask5);
-
-        listScript.forEach(t -> {
-            allTypeTasks.put(t.getTaskId(), t);
-            if (t.getClass() == Task.class) {
-                tasks.put(t.getTaskId(), t);
+        if (optionalDuration.isPresent()) {
+            startTime = optionalStartTime.get();
+            duration = optionalDuration.get();
+            endTime = startTime.plus(duration);
+            for (Task t : tasks.values()) {
+                if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
+                    continue;
+                }
+                if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+                        || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
+                    return true;
+                }
             }
-            if (t.getClass() == EpicTask.class) {
-                epicTasks.put(t.getTaskId(), (EpicTask) t);
+
+            for (SubTask t : subTasks.values()) {
+                if (task.getTaskId().equals(t.getTaskId()) || t.getStartTime() == null) {
+                    continue;
+                }
+                if ((!startTime.isBefore(t.getStartTime()) && !startTime.isAfter(t.getEndTime()))
+                        || (endTime.isBefore(t.getEndTime()) && endTime.isAfter(t.getStartTime()))) {
+                    return true;
+                }
             }
-            if (t.getClass() == SubTask.class) {
-                subTasks.put(t.getTaskId(), (SubTask) t);
-            }
-        });
-        System.out.println("Задачи созданы");
+        }
+            return false;
     }
 }

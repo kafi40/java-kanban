@@ -4,14 +4,14 @@ import enums.TaskStatus;
 
 public class SubTask extends Task {
 
-    private final EpicTask epicTask;
+    private int epicTaskId;
 
-    public SubTask(String taskName, String taskDescription, TaskStatus taskStatus, EpicTask epicTask) {
+    public SubTask(String taskName, String taskDescription, TaskStatus taskStatus, int epicTaskId) {
         super(taskName, taskDescription, taskStatus);
-        this.epicTask = epicTask;
+        this.epicTaskId = epicTaskId;
     }
 
-    public EpicTask getEpicTask() {
-        return epicTask;
+    public int getEpicTaskId() {
+        return epicTaskId;
     }
 }

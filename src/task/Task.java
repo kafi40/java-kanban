@@ -18,6 +18,8 @@ public class Task {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.taskStatus = taskStatus;
+
+
     }
 
     public Integer getTaskId() {
